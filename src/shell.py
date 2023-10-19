@@ -11,6 +11,7 @@ def eval(cmdline, out):
     for m in re.finditer("([^\"';]+|\"[^\"]*\"|'[^']*')", cmdline):
         if m.group(0):
             raw_commands.append(m.group(0))
+    print("raw command: " + str(raw_commands))
     for command in raw_commands:
         tokens = []
         for m in re.finditer("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'", command):
@@ -23,6 +24,7 @@ def eval(cmdline, out):
                     tokens.extend(globbing)
                 else:
                     tokens.append(m.group(0))
+
         app = tokens[0]
         args = tokens[1:]
         if app == "pwd":
@@ -98,6 +100,16 @@ def eval(cmdline, out):
             raise ValueError(f"unsupported application {app}")
 
 
+def run_eval(cmd_str: str):    # function to run eval() and incorporate error handling
+    out = deque()
+    try:
+        eval(cmd_str, out)
+        while len(out) > 0:
+            print(out.popleft(), end="")
+    except ValueError as e:
+        print(e)
+
+
 if __name__ == "__main__":
     args_num = len(sys.argv) - 1
     if args_num > 0:
@@ -105,15 +117,10 @@ if __name__ == "__main__":
             raise ValueError("wrong number of command line arguments")
         if sys.argv[1] != "-c":
             raise ValueError(f"unexpected command line argument {sys.argv[1]}")
-        out = deque()
-        eval(sys.argv[2], out)
-        while len(out) > 0:
-            print(out.popleft(), end="")
+        run_eval(sys.argv[2])
+
     else:
         while True:
             print(os.getcwd() + "> ", end="")
             cmdline = input()
-            out = deque()
-            eval(cmdline, out)
-            while len(out) > 0:
-                print(out.popleft(), end="")
+            run_eval(cmdline)
