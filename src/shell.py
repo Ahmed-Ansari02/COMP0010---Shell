@@ -100,7 +100,7 @@ def eval(cmdline, out):
             raise ValueError(f"unsupported application {app}")
 
 
-def run_eval(cmd_str: str):    # function to run eval() and incorporate error handling
+def run_eval(cmd_str: str):  # function to call eval() and incorporate error handling
     out = deque()
     try:
         eval(cmd_str, out)
@@ -110,14 +110,21 @@ def run_eval(cmd_str: str):    # function to run eval() and incorporate error ha
         print(e)
 
 
+def check_args(args_num, args): # function to check command line arguments and incorporate error handling
+    if args_num != 2:
+        raise ValueError("wrong number of command line arguments")
+    if args[1] != "-c":
+        raise ValueError(f"unexpected command line argument {args[1]}")
+
+
 if __name__ == "__main__":
     args_num = len(sys.argv) - 1
     if args_num > 0:
-        if args_num != 2:
-            raise ValueError("wrong number of command line arguments")
-        if sys.argv[1] != "-c":
-            raise ValueError(f"unexpected command line argument {sys.argv[1]}")
-        run_eval(sys.argv[2])
+        try:
+            check_args(args_num, sys.argv)
+            run_eval(sys.argv[2])
+        except ValueError as e:
+            print(e)
 
     else:
         while True:
