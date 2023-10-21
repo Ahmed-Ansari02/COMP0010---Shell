@@ -40,6 +40,7 @@ def eval(cmdline, out):
                 else:
                     tokens.append(m.group(0))
         print("Tokens: ", tokens)
+        if len(tokens) == 0: continue
         app = tokens[0]
         args = tokens[1:]
         if app == "pwd":
