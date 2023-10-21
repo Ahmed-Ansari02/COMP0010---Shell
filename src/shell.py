@@ -6,12 +6,27 @@ from collections import deque
 from glob import glob
 
 
+class Token:
+    pass
+
+class Quoted:
+    pass
+
+class Command:
+    pass
+
+
 def eval(cmdline, out):
     raw_commands = []
-    for m in re.finditer("([^\"';]+|\"[^\"]*\"|'[^']*')", cmdline):
-        if m.group(0):
-            raw_commands.append(m.group(0))
-    print("raw command: " + str(raw_commands))
+    
+    for m in re.finditer("(([^\"';]+[\"'][^\"']*[\"'])|[^\"';]+|\"[^\"]*\"|'[^']*'|)", cmdline):
+        if m.group(2):
+            print("Group 2: ", m.group(2))
+            raw_commands.append(m.group(2)) 
+        elif m.group(1):
+            print("Group 1: ", m.group(1))
+            raw_commands.append(m.group(1))
+    print("Raw commands: ", raw_commands)
     for command in raw_commands:
         tokens = []
         for m in re.finditer("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'", command):
@@ -24,7 +39,7 @@ def eval(cmdline, out):
                     tokens.extend(globbing)
                 else:
                     tokens.append(m.group(0))
-
+        print("Tokens: ", tokens)
         app = tokens[0]
         args = tokens[1:]
         if app == "pwd":
