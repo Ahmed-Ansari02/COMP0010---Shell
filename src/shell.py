@@ -6,11 +6,26 @@ from collections import deque
 from glob import glob
 
 
+commands = {"pwd", "cd", "echo", "ls", "cat", "head", "tail", "grep"}
+
+
+# echo hello
 def eval(cmdline, out):
     raw_commands = []
-    for m in re.finditer("([^\"';]+|\"[^\"]*\"|'[^']*')", cmdline):
-        if m.group(0):
-            raw_commands.append(m.group(0))
+    stack = []
+    for cmd in cmdline.split(" "):
+        stack.append(cmd)
+
+    while len(stack) != 0:
+        token = stack.pop(0)
+        if token == "echo":
+            command_str = "echo"
+            while (len(stack) != 0) and (
+                (stack[0] != "|") or (stack[0] != ">") or (stack[0] != ";")
+            ):
+                command_str += " " + stack.pop(0)
+            raw_commands.append(command_str)
+
     print("raw command: " + str(raw_commands))
     for command in raw_commands:
         tokens = []
@@ -110,7 +125,9 @@ def run_eval(cmd_str: str):  # function to call eval() and incorporate error han
         print(e)
 
 
-def check_args(args_num, args): # function to check command line arguments and incorporate error handling
+def check_args(
+    args_num, args
+):  # function to check command line arguments and incorporate error handling
     if args_num != 2:
         raise ValueError("wrong number of command line arguments")
     if args[1] != "-c":
