@@ -132,23 +132,28 @@ COMMANDS = {
 
 
 def parse_raw_commands(cmdline: str):
+    operators = {"|", ">", ";"}
     raw_commands = []
     stack = []
     for cmd in cmdline.split(" "):
+        # Regex to parse command line arguments
         stack.append(cmd)
-
+    print(f"stack: {stack}")
     while len(stack) != 0:
         token = stack.pop(0)
         command_str = token
-        while (len(stack) != 0) and (
-            (stack[0] != "|") or (stack[0] != ">") or (stack[0] != ";")
-        ):
+        while (len(stack) != 0):
+            if stack[0] in operators:
+                stack.pop(0)
+                break
             command_str += " " + stack.pop(0)
+        print(command_str)
         raw_commands.append(command_str)
+
     return raw_commands
 
 
-def parse_commands(raw_commands: str, out: deque):
+def parse_commands(raw_commands: [str], out: deque):
     for command in raw_commands:
         tokens = []
         for m in re.finditer("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'", command):
