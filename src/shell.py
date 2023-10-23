@@ -16,17 +16,154 @@ class Command:
     pass
 
 
-def eval(cmdline, out):
+class Command:
+    def run(self, argument: str, out: deque) -> None:
+        pass
+
+
+class echo(Command):
+    def run(self, argument: str, out: deque) -> None:
+        out.append(" ".join(argument) + "\n")
+
+
+class pwd(Command):
+    def run(self, argument: str, out: deque) -> None:
+        out.append(os.getcwd() + "\n")
+
+
+class cd(Command):
+    def run(self, argument: str, out: deque) -> None:
+        if len(argument) == 0 or len(argument) > 1:
+            raise ValueError("wrong number of command line arguments")
+        os.chdir(argument[0])
+
+
+class ls(Command):
+    def run(self, argument: str, out: deque) -> None:
+        if len(argument) == 0:
+            ls_dir = os.getcwd()
+        elif len(argument) > 1:
+            raise ValueError("wrong number of command line arguments")
+        else:
+            ls_dir = argument[0]
+        try:
+            for f in listdir(ls_dir):
+                if not f.startswith("."):
+                    out.append(f + "\n")
+        except FileNotFoundError:
+            raise ValueError(f"directory {ls_dir} does not exist")
+
+
+class cat(Command):
+    def run(self, argument: str, out: deque) -> None:
+        for file in argument:
+            try:
+                with open(file) as f:
+                    out.append(f.read())
+            except FileNotFoundError:
+                raise ValueError(f"file {file} does not exist")
+
+
+class head(Command):
+    def run(self, argument: str, out: deque) -> None:
+        if len(argument) != 1 and len(argument) != 3:
+            raise ValueError("wrong number of command line arguments")
+        if len(argument) == 1:
+            num_lines = 10
+            file = argument[0]
+        if len(argument) == 3:
+            if argument[0] != "-n":
+                raise ValueError("wrong flags")
+            else:
+                num_lines = int(argument[1])
+                file = argument[2]
+        try:
+            with open(file) as f:
+                lines = f.readlines()
+                for i in range(0, min(len(lines), num_lines)):
+                    out.append(lines[i])
+        except FileNotFoundError:
+            raise ValueError(f"file {file} does not exist")
+
+
+class tail(Command):
+    def run(self, argument: str, out: deque) -> None:
+        if len(argument) != 1 and len(argument) != 3:
+            raise ValueError("wrong number of command line arguments")
+        if len(argument) == 1:
+            num_lines = 10
+            file = argument[0]
+        if len(argument) == 3:
+            if argument[0] != "-n":
+                raise ValueError("wrong flags")
+            else:
+                num_lines = int(argument[1])
+                file = argument[2]
+        try:
+            with open(file) as f:
+                lines = f.readlines()
+                display_length = min(len(lines), num_lines)
+                for i in range(0, display_length):
+                    out.append(lines[len(lines) - display_length + i])
+        except FileNotFoundError:
+            raise ValueError(f"file {file} does not exist")
+
+
+class grep(Command):
+    def run(self, argument: str, out: deque) -> None:
+        if len(argument) < 2:
+            raise ValueError("wrong number of command line arguments")
+        pattern = argument[0]
+        files = argument[1:]
+        for file in files:
+            try:
+                with open(file) as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        if re.match(pattern, line):
+                            if len(files) > 1:
+                                out.append(f"{file}:{line}")
+                            else:
+                                out.append(line)
+            except FileNotFoundError:
+                raise ValueError(f"file {file} does not exist")
+
+
+COMMANDS = {
+    "pwd": pwd,
+    "cd": cd,
+    "echo": echo,
+    "ls": ls,
+    "cat": cat,
+    "head": head,
+    "tail": tail,
+    "grep": grep,
+}
+
+
+def parse_raw_commands(cmdline: str):
+    operators = {"|", ">", ";"}
     raw_commands = []
-    
-    for m in re.finditer("(([^\"';]+[\"'][^\"']*[\"'])|[^\"';]+|\"[^\"]*\"|'[^']*'|)", cmdline):
-        if m.group(2):
-            print("Group 2: ", m.group(2))
-            raw_commands.append(m.group(2)) 
-        elif m.group(1):
-            print("Group 1: ", m.group(1))
-            raw_commands.append(m.group(1))
-    print("Raw commands: ", raw_commands)
+    stack = []
+    for cmd in cmdline.split(" "):
+        # Regex to parse command line arguments
+        stack.append(cmd)
+    print(f"stack: {stack}")
+    while len(stack) != 0:
+        token = stack.pop(0)
+        command_str = token
+        while (len(stack) != 0):
+            if stack[0] in operators:
+                stack.pop(0)
+                break
+            command_str += " " + stack.pop(0)
+        print(command_str)
+        raw_commands.append(command_str)
+
+    return raw_commands
+
+
+def parse_commands(raw_commands: [str], out: deque):
     for command in raw_commands:
         tokens = []
         for m in re.finditer("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'", command):
@@ -43,77 +180,18 @@ def eval(cmdline, out):
         if len(tokens) == 0: continue
         app = tokens[0]
         args = tokens[1:]
-        if app == "pwd":
-            out.append(os.getcwd())
-        elif app == "cd":
-            if len(args) == 0 or len(args) > 1:
-                raise ValueError("wrong number of command line arguments")
-            os.chdir(args[0])
-        elif app == "echo":
-            out.append(" ".join(args) + "\n")
-        elif app == "ls":
-            if len(args) == 0:
-                ls_dir = os.getcwd()
-            elif len(args) > 1:
-                raise ValueError("wrong number of command line arguments")
-            else:
-                ls_dir = args[0]
-            for f in listdir(ls_dir):
-                if not f.startswith("."):
-                    out.append(f + "\n")
-        elif app == "cat":
-            for a in args:
-                with open(a) as f:
-                    out.append(f.read())
-        elif app == "head":
-            if len(args) != 1 and len(args) != 3:
-                raise ValueError("wrong number of command line arguments")
-            if len(args) == 1:
-                num_lines = 10
-                file = args[0]
-            if len(args) == 3:
-                if args[0] != "-n":
-                    raise ValueError("wrong flags")
-                else:
-                    num_lines = int(args[1])
-                    file = args[2]
-            with open(file) as f:
-                lines = f.readlines()
-                for i in range(0, min(len(lines), num_lines)):
-                    out.append(lines[i])
-        elif app == "tail":
-            if len(args) != 1 and len(args) != 3:
-                raise ValueError("wrong number of command line arguments")
-            if len(args) == 1:
-                num_lines = 10
-                file = args[0]
-            if len(args) == 3:
-                if args[0] != "-n":
-                    raise ValueError("wrong flags")
-                else:
-                    num_lines = int(args[1])
-                    file = args[2]
-            with open(file) as f:
-                lines = f.readlines()
-                display_length = min(len(lines), num_lines)
-                for i in range(0, display_length):
-                    out.append(lines[len(lines) - display_length + i])
-        elif app == "grep":
-            if len(args) < 2:
-                raise ValueError("wrong number of command line arguments")
-            pattern = args[0]
-            files = args[1:]
-            for file in files:
-                with open(file) as f:
-                    lines = f.readlines()
-                    for line in lines:
-                        if re.match(pattern, line):
-                            if len(files) > 1:
-                                out.append(f"{file}:{line}")
-                            else:
-                                out.append(line)
+        if app in COMMANDS:
+            COMMANDS[app]().run(args, out)
         else:
             raise ValueError(f"unsupported application {app}")
+
+
+def eval(cmdline, out):
+    raw_commands = parse_raw_commands(cmdline)
+    try:
+        parse_commands(raw_commands, out)
+    except ValueError as e:
+        print(e)
 
 
 def run_eval(cmd_str: str):  # function to call eval() and incorporate error handling
@@ -126,7 +204,9 @@ def run_eval(cmd_str: str):  # function to call eval() and incorporate error han
         print(e)
 
 
-def check_args(args_num, args): # function to check command line arguments and incorporate error handling
+def check_args(
+    args_num, args
+):  # function to check command line arguments and incorporate error handling
     if args_num != 2:
         raise ValueError("wrong number of command line arguments")
     if args[1] != "-c":
