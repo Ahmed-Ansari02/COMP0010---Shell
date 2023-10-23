@@ -5,6 +5,37 @@ from os import listdir
 from collections import deque
 from glob import glob
 
+class Node:
+    def __init__(self) -> None:
+        pass
+
+    def parse(self, tokens: [str]) -> None:
+        pass
+
+class Quoted(Node):
+    def __init__(self, quoted_str: str) -> None:
+        self.quoted_str = quoted_str
+
+    def __str__(self) -> str:
+        return self.quoted_str
+
+        
+    def parse(self, tokens: [str]) -> None:
+        pass
+
+class Leaf:
+    def parse(self, tokens: [str]) -> None:
+        pass
+
+class Operator:
+    def parse(self, tokens: [str]) -> None:
+        pass
+
+class Pipe(Operator):
+    def parse(self, tokens: [str]) -> None:
+        pass
+        
+
 class Command:
     def run(self, argument: str, out: deque) -> None:
         pass
@@ -129,12 +160,38 @@ COMMANDS = {
     "grep": grep,
 }
 
+def combine_broken_strings(stack: [str]) -> [str]:
+    i = 0
+    while i < len(stack):
+        if stack[i][0]=="'":
+            key = i
+            while (stack[i][0]=="'" and stack[key][-1]!="'") or len(stack[key])==1:
+                print(stack)
+                if key==len(stack)-1:
+                    raise Exception("SyntaxError: Unterminated string")
+                stack[i] += ' ' + stack.pop(key+1)
+        if stack[i][0]=='"':
+            key = i
+            while (stack[i][0]=='"' and stack[key][-1]!='"') or len(stack[key])==1:
+                if key==len(stack)-1:
+                    raise Exception("SyntaxError: Unterminated string")
+                stack[i] += ' ' + stack.pop(key+1)
+        i += 1
+    for i in range(len(stack)):
+        stack[i] = stack[i].replace(" ; ", ";")
+        stack[i] = stack[i].replace(" | ", "|")
+        stack[i] = stack[i].replace(" > ", ">")
+    return stack
 
 def parse_raw_commands(cmdline: str):
+
+    cmdline = re.sub(r'([;|>])', r' \1 ', cmdline)
     operators = {"|", ">", ";"}
     raw_commands = []
-    stack = re.split(r'(?<=[;|>])|(?=[;|>])| ', cmdline)
+    stack = re.split(r'\s+', cmdline)
     stack = [item for item in stack if item]
+    stack = combine_broken_strings(stack)
+    # print("Stack: ", stack)
     while len(stack) != 0:
         token = stack.pop(0)
         command_str = token
@@ -142,9 +199,9 @@ def parse_raw_commands(cmdline: str):
             if stack[0] in operators:
                 stack.pop(0)
                 break
-            command_str += " " + stack.pop(0)
+            command_str += " " + str(stack.pop(0))
         raw_commands.append(command_str)
-    print(raw_commands)
+    # print("Raw commands: ", raw_commands)
     return raw_commands
 
 
@@ -161,7 +218,7 @@ def parse_commands(raw_commands: [str], out: deque):
                     tokens.extend(globbing)
                 else:
                     tokens.append(m.group(0))
-        print("Tokens: ", tokens)
+        # print("Tokens: ", tokens)
         if len(tokens) == 0: continue
         app = tokens[0]
         args = tokens[1:]
@@ -172,10 +229,11 @@ def parse_commands(raw_commands: [str], out: deque):
 
 
 def eval(cmdline, out):
-    raw_commands = parse_raw_commands(cmdline)
     try:
+        raw_commands = parse_raw_commands(cmdline)
         parse_commands(raw_commands, out)
-    except ValueError as e:
+        # print("Out: ", out)
+    except Exception as e:
         print(e)
 
 
