@@ -5,17 +5,6 @@ from os import listdir
 from collections import deque
 from glob import glob
 
-
-class Token:
-    pass
-
-class Quoted:
-    pass
-
-class Command:
-    pass
-
-
 class Command:
     def run(self, argument: str, out: deque) -> None:
         pass
@@ -144,11 +133,8 @@ COMMANDS = {
 def parse_raw_commands(cmdline: str):
     operators = {"|", ">", ";"}
     raw_commands = []
-    stack = []
-    for cmd in cmdline.split(" "):
-        # Regex to parse command line arguments
-        stack.append(cmd)
-    print(f"stack: {stack}")
+    stack = re.split(r'(?<=[;|>])|(?=[;|>])| ', cmdline)
+    stack = [item for item in stack if item]
     while len(stack) != 0:
         token = stack.pop(0)
         command_str = token
@@ -157,9 +143,8 @@ def parse_raw_commands(cmdline: str):
                 stack.pop(0)
                 break
             command_str += " " + stack.pop(0)
-        print(command_str)
         raw_commands.append(command_str)
-
+    print(raw_commands)
     return raw_commands
 
 
