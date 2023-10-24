@@ -35,28 +35,23 @@ class Pipe(Operator):
     def parse(self, tokens: [str]) -> None:
         pass
         
-
 class Command:
     def run(self, argument: str, out: deque) -> None:
         pass
-
 
 class echo(Command):
     def run(self, argument: str, out: deque) -> None:
         out.append(" ".join(argument) + "\n")
 
-
 class pwd(Command):
     def run(self, argument: str, out: deque) -> None:
         out.append(os.getcwd() + "\n")
-
 
 class cd(Command):
     def run(self, argument: str, out: deque) -> None:
         if len(argument) == 0 or len(argument) > 1:
             raise ValueError("wrong number of command line arguments")
         os.chdir(argument[0])
-
 
 class ls(Command):
     def run(self, argument: str, out: deque) -> None:
@@ -73,7 +68,6 @@ class ls(Command):
         except FileNotFoundError:
             raise ValueError(f"directory {ls_dir} does not exist")
 
-
 class cat(Command):
     def run(self, argument: str, out: deque) -> None:
         for file in argument:
@@ -82,7 +76,6 @@ class cat(Command):
                     out.append(f.read())
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
-
 
 class head(Command):
     def run(self, argument: str, out: deque) -> None:
@@ -104,7 +97,6 @@ class head(Command):
                     out.append(lines[i])
         except FileNotFoundError:
             raise ValueError(f"file {file} does not exist")
-
 
 class tail(Command):
     def run(self, argument: str, out: deque) -> None:
@@ -128,7 +120,6 @@ class tail(Command):
         except FileNotFoundError:
             raise ValueError(f"file {file} does not exist")
 
-
 class grep(Command):
     def run(self, argument: str, out: deque) -> None:
         if len(argument) < 2:
@@ -148,7 +139,6 @@ class grep(Command):
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
 
-
 COMMANDS = {
     "pwd": pwd,
     "cd": cd,
@@ -163,6 +153,7 @@ COMMANDS = {
 def combine_broken_strings(stack: [str]) -> [str]:
     i = 0
     while i < len(stack):
+        print(stack)
         if stack[i][0]=="'":
             key = i
             while (stack[i][0]=="'" and stack[key][-1]!="'") or len(stack[key])==1:
@@ -177,10 +168,12 @@ def combine_broken_strings(stack: [str]) -> [str]:
                     raise Exception("SyntaxError: Unterminated string")
                 stack[i] += ' ' + stack.pop(key+1)
         i += 1
+    print(stack)
     for i in range(len(stack)):
-        stack[i] = stack[i].replace(" ; ", ";")
-        stack[i] = stack[i].replace(" | ", "|")
-        stack[i] = stack[i].replace(" > ", ">")
+        if not ((stack[i][0]=="'" or stack[i][0]=='"') or (stack[i][-1]=="'" or stack[i][-1]=='"')):
+            stack[i] = stack[i].replace(" ; ", ";")
+            stack[i] = stack[i].replace(" | ", "|")
+            stack[i] = stack[i].replace(" > ", ">")
     return stack
 
 def parse_raw_commands(cmdline: str):
@@ -191,7 +184,7 @@ def parse_raw_commands(cmdline: str):
     stack = re.split(r'\s+', cmdline)
     stack = [item for item in stack if item]
     stack = combine_broken_strings(stack)
-    # print("Stack: ", stack)
+    print("Stack: ", stack)
     while len(stack) != 0:
         token = stack.pop(0)
         command_str = token
@@ -203,7 +196,6 @@ def parse_raw_commands(cmdline: str):
         raw_commands.append(command_str)
     # print("Raw commands: ", raw_commands)
     return raw_commands
-
 
 def parse_commands(raw_commands: [str], out: deque):
     for command in raw_commands:
@@ -227,7 +219,6 @@ def parse_commands(raw_commands: [str], out: deque):
         else:
             raise ValueError(f"unsupported application {app}")
 
-
 def eval(cmdline, out):
     try:
         raw_commands = parse_raw_commands(cmdline)
@@ -235,7 +226,6 @@ def eval(cmdline, out):
         # print("Out: ", out)
     except Exception as e:
         print(e)
-
 
 def run_eval(cmd_str: str):  # function to call eval() and incorporate error handling
     out = deque()
@@ -246,7 +236,6 @@ def run_eval(cmd_str: str):  # function to call eval() and incorporate error han
     except ValueError as e:
         print(e)
 
-
 def check_args(
     args_num, args
 ):  # function to check command line arguments and incorporate error handling
@@ -254,7 +243,6 @@ def check_args(
         raise ValueError("wrong number of command line arguments")
     if args[1] != "-c":
         raise ValueError(f"unexpected command line argument {args[1]}")
-
 
 if __name__ == "__main__":
     args_num = len(sys.argv) - 1
