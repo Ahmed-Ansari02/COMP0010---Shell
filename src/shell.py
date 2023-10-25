@@ -6,11 +6,13 @@ from collections import deque
 from glob import glob
 
 class Node:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, value, left, right):
+        self.value = value
+        self.left = left
+        self.right = right
 
-    def parse(self, tokens: [str]) -> None:
-        pass
+    def __str__(self) -> str:
+        return f"Tree(Left: {self.left}, Value: {self.value}, Right: {self.right})"
 
 class Quoted(Node):
     def __init__(self, quoted_str: str) -> None:
@@ -23,24 +25,39 @@ class Quoted(Node):
     def parse(self, tokens: [str]) -> None:
         pass
 
-class Leaf:
-    def parse(self, tokens: [str]) -> None:
-        pass
-
-class Operator:
-    def parse(self, tokens: [str]) -> None:
-        pass
-
-class Pipe(Operator):
-    def parse(self, tokens: [str]) -> None:
-        pass
-        
 class Command:
     def run(self, argument: str, out: deque) -> None:
         pass
 
-class echo(Command):
+class Pipe(Command):
+
     def run(self, argument: str, out: deque) -> None:
+        pass
+    
+    def __str__(self) -> str:
+        return "Pipe"
+
+class GreaterThan(Command):
+
+    def run(self, argument: str, out: deque) -> None:
+        pass
+
+    def __str__(self) -> str:
+        return "GreaterThan"
+
+class Semicolon(Command):
+
+    def run(self, argument: [str], out: deque) -> None:
+        print("ARGUMENT: ", argument)
+        parse_commands([argument[0]], out)
+        parse_commands([argument[1]], out)
+    
+    def __str__(self) -> str:
+        return "Semicolon"
+
+class echo(Command):
+    def run(self, argument: [str], out: deque) -> None:
+        print(argument)
         out.append(" ".join(argument) + "\n")
 
 class pwd(Command):
@@ -148,6 +165,9 @@ COMMANDS = {
     "head": head,
     "tail": tail,
     "grep": grep,
+    "|": Pipe,
+    ">": GreaterThan,
+    ";": Semicolon
 }
 
 def combine_broken_strings(stack: [str]) -> [str]:
@@ -155,20 +175,16 @@ def combine_broken_strings(stack: [str]) -> [str]:
     while i < len(stack):
         print(stack)
         if stack[i][0]=="'":
-            key = i
-            while (stack[i][0]=="'" and stack[key][-1]!="'") or len(stack[key])==1:
-                print(stack)
-                if key==len(stack)-1:
+            while (stack[i][0]=="'" and stack[i][-1]!="'") or len(stack[i])==1:
+                if i==len(stack)-1:
                     raise Exception("SyntaxError: Unterminated string")
-                stack[i] += ' ' + stack.pop(key+1)
-        if stack[i][0]=='"':
-            key = i
-            while (stack[i][0]=='"' and stack[key][-1]!='"') or len(stack[key])==1:
-                if key==len(stack)-1:
+                stack[i] += ' ' + stack.pop(i+1)
+        elif stack[i][0]=='"':
+            while (stack[i][0]=='"' and stack[i][-1]!='"') or len(stack[i])==1:
+                if i==len(stack)-1:
                     raise Exception("SyntaxError: Unterminated string")
-                stack[i] += ' ' + stack.pop(key+1)
+                stack[i] += ' ' + stack.pop(i+1)
         i += 1
-    print(stack)
     for i in range(len(stack)):
         if not ((stack[i][0]=="'" or stack[i][0]=='"') or (stack[i][-1]=="'" or stack[i][-1]=='"')):
             stack[i] = stack[i].replace(" ; ", ";")
@@ -176,28 +192,47 @@ def combine_broken_strings(stack: [str]) -> [str]:
             stack[i] = stack[i].replace(" > ", ">")
     return stack
 
-def parse_raw_commands(cmdline: str):
+def parse(cmdline: str):
+    root = Node(None, None, None)
+    pattern = r"([^;|>]*)([;|>])(.*)"
+    match = re.match(pattern, cmdline)
+    if match:
+        s1 = parse(match.group(1))
+        s2 = COMMANDS[match.group(2)]()
+        s3 = parse(match.group(3))
+        root = Node(s2, s1, s3)
+    else:
+        root = Node(cmdline, None, None)
+    return root
 
-    cmdline = re.sub(r'([;|>])', r' \1 ', cmdline)
-    operators = {"|", ">", ";"}
-    raw_commands = []
-    stack = re.split(r'\s+', cmdline)
-    stack = [item for item in stack if item]
-    stack = combine_broken_strings(stack)
-    print("Stack: ", stack)
-    while len(stack) != 0:
-        token = stack.pop(0)
-        command_str = token
-        while (len(stack) != 0):
-            if stack[0] in operators:
-                stack.pop(0)
-                break
-            command_str += " " + str(stack.pop(0))
-        raw_commands.append(command_str)
+def parse_raw_commands(cmdline: str, out: deque):
+    root = parse(cmdline)
+    if not(isinstance(root.value, Pipe) or isinstance(root.value, GreaterThan) or isinstance(root.value, Semicolon)):
+        parse_commands([root.value], out)
+    else:
+        root.value.run([root.left.value, root.right.value], out)
+
+    # cmdline = re.sub(r'([;|>])', r' \1 ', cmdline)
+    # operators = {"|", ">", ";"}
+    # raw_commands = []
+    # stack = re.split(r'\s+', cmdline)
+    # stack = [item for item in stack if item]
+    # stack = combine_broken_strings(stack)
+    # print("Stack: ", stack)
+    # while len(stack) != 0:
+    #     token = stack.pop(0)
+    #     command_str = token
+    #     while (len(stack) != 0):
+    #         if stack[0] in operators:
+    #             stack.pop(0)
+    #             break
+    #         command_str += " " + str(stack.pop(0))
+    #     raw_commands.append(command_str)
     # print("Raw commands: ", raw_commands)
-    return raw_commands
+    # return raw_commands
 
 def parse_commands(raw_commands: [str], out: deque):
+    print("Raw commands: ", raw_commands)
     for command in raw_commands:
         tokens = []
         for m in re.finditer("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'", command):
@@ -210,8 +245,8 @@ def parse_commands(raw_commands: [str], out: deque):
                     tokens.extend(globbing)
                 else:
                     tokens.append(m.group(0))
-        # print("Tokens: ", tokens)
         if len(tokens) == 0: continue
+        print("Tokens: ", tokens)
         app = tokens[0]
         args = tokens[1:]
         if app in COMMANDS:
@@ -221,8 +256,8 @@ def parse_commands(raw_commands: [str], out: deque):
 
 def eval(cmdline, out):
     try:
-        raw_commands = parse_raw_commands(cmdline)
-        parse_commands(raw_commands, out)
+        parse_raw_commands(cmdline, out)
+        # parse_commands(raw_commands, out)
         # print("Out: ", out)
     except Exception as e:
         print(e)
@@ -231,6 +266,7 @@ def run_eval(cmd_str: str):  # function to call eval() and incorporate error han
     out = deque()
     try:
         eval(cmd_str, out)
+        print("Out before printed: ", out)
         while len(out) > 0:
             print(out.popleft(), end="")
     except ValueError as e:
