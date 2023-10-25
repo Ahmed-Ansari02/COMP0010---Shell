@@ -170,37 +170,19 @@ COMMANDS = {
     ";": Semicolon
 }
 
-def combine_broken_strings(stack: [str]) -> [str]:
-    i = 0
-    while i < len(stack):
-        print(stack)
-        if stack[i][0]=="'":
-            while (stack[i][0]=="'" and stack[i][-1]!="'") or len(stack[i])==1:
-                if i==len(stack)-1:
-                    raise Exception("SyntaxError: Unterminated string")
-                stack[i] += ' ' + stack.pop(i+1)
-        elif stack[i][0]=='"':
-            while (stack[i][0]=='"' and stack[i][-1]!='"') or len(stack[i])==1:
-                if i==len(stack)-1:
-                    raise Exception("SyntaxError: Unterminated string")
-                stack[i] += ' ' + stack.pop(i+1)
-        i += 1
-    for i in range(len(stack)):
-        if not ((stack[i][0]=="'" or stack[i][0]=='"') or (stack[i][-1]=="'" or stack[i][-1]=='"')):
-            stack[i] = stack[i].replace(" ; ", ";")
-            stack[i] = stack[i].replace(" | ", "|")
-            stack[i] = stack[i].replace(" > ", ">")
-    return stack
-
 def parse(cmdline: str):
     root = Node(None, None, None)
     pattern = r"([^;|>]*)([;|>])(.*)"
     match = re.match(pattern, cmdline)
     if match:
-        s1 = parse(match.group(1))
-        s2 = COMMANDS[match.group(2)]()
-        s3 = parse(match.group(3))
-        root = Node(s2, s1, s3)
+        quotes_surrounding_operator = (((match.group(1).count("'") % 2 != 0) and (match.group(1).count("'") == match.group(3).count("'"))) or ((match.group(1).count("\"") % 2 != 0) and (match.group(1).count("\"") == match.group(3).count("\""))))
+        if quotes_surrounding_operator:
+            root = Node(cmdline, None, None)
+        else:
+            s1 = parse(match.group(1))
+            s2 = COMMANDS[match.group(2)]()
+            s3 = parse(match.group(3))
+            root = Node(s2, s1, s3)
     else:
         root = Node(cmdline, None, None)
     return root
@@ -211,25 +193,6 @@ def parse_raw_commands(cmdline: str, out: deque):
         parse_commands([root.value], out)
     else:
         root.value.run([root.left.value, root.right.value], out)
-
-    # cmdline = re.sub(r'([;|>])', r' \1 ', cmdline)
-    # operators = {"|", ">", ";"}
-    # raw_commands = []
-    # stack = re.split(r'\s+', cmdline)
-    # stack = [item for item in stack if item]
-    # stack = combine_broken_strings(stack)
-    # print("Stack: ", stack)
-    # while len(stack) != 0:
-    #     token = stack.pop(0)
-    #     command_str = token
-    #     while (len(stack) != 0):
-    #         if stack[0] in operators:
-    #             stack.pop(0)
-    #             break
-    #         command_str += " " + str(stack.pop(0))
-    #     raw_commands.append(command_str)
-    # print("Raw commands: ", raw_commands)
-    # return raw_commands
 
 def parse_commands(raw_commands: [str], out: deque):
     print("Raw commands: ", raw_commands)
