@@ -49,15 +49,23 @@ class Semicolon(Command):
 
     def run(self, argument: [str], out: deque) -> None:
         print("ARGUMENT: ", argument)
-        parse_commands([argument[0]], out)
-        parse_commands([argument[1]], out)
+        left = argument[0]
+        right = argument[1]
+        if not(isinstance(left, Pipe) or isinstance(left, GreaterThan) or isinstance(left, Semicolon)):
+            parse_commands([left], out)
+        else:
+            argument[0].run([left.left.value, left.right.value], out)
+        
+        if not(isinstance(right, Pipe) or isinstance(right, GreaterThan) or isinstance(right, Semicolon)):
+            parse_commands([right], out)
+        else:
+            argument[0].run([right.left.value, right.right.value], out)
     
     def __str__(self) -> str:
         return "Semicolon"
 
 class echo(Command):
     def run(self, argument: [str], out: deque) -> None:
-        print(argument)
         out.append(" ".join(argument) + "\n")
 
 class pwd(Command):
@@ -71,7 +79,7 @@ class cd(Command):
         os.chdir(argument[0])
 
 class ls(Command):
-    def run(self, argument: str, out: deque) -> None:
+    def run(self, argument: [str], out: deque) -> None:
         if len(argument) == 0:
             ls_dir = os.getcwd()
         elif len(argument) > 1:
@@ -189,6 +197,7 @@ def parse(cmdline: str):
 
 def parse_raw_commands(cmdline: str, out: deque):
     root = parse(cmdline)
+    print("Root: ", root)
     if not(isinstance(root.value, Pipe) or isinstance(root.value, GreaterThan) or isinstance(root.value, Semicolon)):
         parse_commands([root.value], out)
     else:
