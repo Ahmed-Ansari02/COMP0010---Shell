@@ -4,6 +4,28 @@ import os
 from os import listdir
 from collections import deque
 from glob import glob
+from antlr4 import *
+from Antlr import ExprLexer
+from Antlr import ExprParser
+from Antlr import ExprVisitor
+
+class ShellVisitor(ExprVisitor):
+    def visitSimpleCommand(self, ctx: ExprParser.SimpleCommandContext):
+        command = ctx.CMD().pop()
+        arguments = ""
+        if len(ctx.arg()) != 0:
+            for argument in ctx.arg():
+                arguments += self.visitArg(argument) + " "
+        return {command, arguments}
+
+    def visitArg(self, ctx:ExprParser.ArgContext)->str:
+        if ctx.UNQUOTED_STRING():
+            return ctx.UNQUOTED_STRING().__str__()
+        else:
+            return ctx.STRING().__str__()
+
+
+
 
 class Node:
     def __init__(self, value, left, right):
@@ -226,13 +248,25 @@ def parse_commands(raw_commands: [str], out: deque):
         else:
             raise ValueError(f"unsupported application {app}")
 
+def parse_tree_output(cmdline:str):
+    raw_commands = []
+    input_stream = InputStream(cmdline)
+    lexer = ExprLexer(input_stream)
+    stream = CommonTokenStream(lexer)
+    parser = ExprParser(stream)
+    tree = parser.program()
+    visitor = ShellVisitor()
+    raw_commands.append(visitor.visitProgram(tree))
+    print(raw_commands)
+    return raw_commands
+
 def eval(cmdline, out):
-    try:
-        parse_raw_commands(cmdline, out)
-        # parse_commands(raw_commands, out)
-        # print("Out: ", out)
-    except Exception as e:
-        print(e)
+    # raw_commands = parse_raw_commands(cmdline)
+    print(parse_tree_output(cmdline))
+    # try:
+    #     parse_commands(raw_commands, out)
+    # except ValueError as e:
+    #     print(e)
 
 def run_eval(cmd_str: str):  # function to call eval() and incorporate error handling
     out = deque()
