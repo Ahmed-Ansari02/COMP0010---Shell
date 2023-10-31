@@ -1,22 +1,32 @@
 import re
 import sys
 import os
+import Antlr
+from Antlr.ExprLexer import ExprLexer
+from Antlr.ExprParser import ExprParser
+from Antlr.ExprVisitor import ExprVisitor
 from os import listdir
 from collections import deque
 from glob import glob
 from antlr4 import *
-from Antlr import ExprLexer
-from Antlr import ExprParser
-from Antlr import ExprVisitor
+
 
 class ShellVisitor(ExprVisitor):
+    def __init__(self):
+        super().__init__()
+        self.commands = []
+
+    def visitProgram(self, ctx:ExprParser.ProgramContext):
+        super().visitProgram(ctx)
+        return self.commands
+
     def visitSimpleCommand(self, ctx: ExprParser.SimpleCommandContext):
         command = ctx.CMD().pop()
         arguments = ""
         if len(ctx.arg()) != 0:
             for argument in ctx.arg():
                 arguments += self.visitArg(argument) + " "
-        return {command, arguments}
+        self.commands.append({"command": command.__str__(), "args": arguments})
 
     def visitArg(self, ctx:ExprParser.ArgContext)->str:
         if ctx.UNQUOTED_STRING():
@@ -249,16 +259,13 @@ def parse_commands(raw_commands: [str], out: deque):
             raise ValueError(f"unsupported application {app}")
 
 def parse_tree_output(cmdline:str):
-    raw_commands = []
     input_stream = InputStream(cmdline)
     lexer = ExprLexer(input_stream)
     stream = CommonTokenStream(lexer)
     parser = ExprParser(stream)
     tree = parser.program()
     visitor = ShellVisitor()
-    raw_commands.append(visitor.visitProgram(tree))
-    print(raw_commands)
-    return raw_commands
+    return visitor.visitProgram(tree)
 
 def eval(cmdline, out):
     # raw_commands = parse_raw_commands(cmdline)
@@ -272,9 +279,8 @@ def run_eval(cmd_str: str):  # function to call eval() and incorporate error han
     out = deque()
     try:
         eval(cmd_str, out)
-        print("Out before printed: ", out)
-        while len(out) > 0:
-            print(out.popleft(), end="")
+        # while len(out) > 0:
+        #     print(out.popleft(), end="")
     except ValueError as e:
         print(e)
 

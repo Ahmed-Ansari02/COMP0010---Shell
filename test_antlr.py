@@ -6,6 +6,7 @@ from Antlr.ExprVisitor import ExprVisitor
 
 
 class ShellVisitor(ExprVisitor):
+
     def visitSimpleCommand(self, ctx: ExprParser.SimpleCommandContext):
         command = ctx.CMD().pop()
         arguments = ""
