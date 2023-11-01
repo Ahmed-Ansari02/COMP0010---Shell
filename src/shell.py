@@ -22,15 +22,18 @@ class ShellVisitor(ExprVisitor):
 
     def visitSimpleCommand(self, ctx: ExprParser.SimpleCommandContext):
         command = ctx.CMD().pop()
-        arguments = ""
+        arguments = []
         if len(ctx.arg()) != 0:
             for argument in ctx.arg():
-                arguments += self.visitArg(argument) + " "
+                arguments.append(self.visitArg(argument))
         self.commands.append({"command": command.__str__(), "args": arguments})
 
     def visitArg(self, ctx:ExprParser.ArgContext)->str:
+
         if ctx.UNQUOTED_STRING():
             return ctx.UNQUOTED_STRING().__str__()
+        elif ctx.FIlE():
+            return ctx.FIlE().__str__()
         else:
             return ctx.STRING().__str__()
 
@@ -205,8 +208,16 @@ def parse_commands(raw_commands: [str], out: deque):
             COMMANDS[app]().run(args, out)
         else:
             raise ValueError(f"unsupported application {app}")
+def parse_tree_commands(raw_commands, out: deque):
+    for command in raw_commands:
+        app = command["command"]
+        args = command["args"]
+        if app in COMMANDS:
+            COMMANDS[app]().run(args, out)
+        else:
+            raise ValueError(f"unsupported application {app}")
 
-def parse_tree_output(cmdline:str):
+def parse_tree(cmdline:str):
     input_stream = InputStream(cmdline)
     lexer = ExprLexer(input_stream)
     stream = CommonTokenStream(lexer)
@@ -215,21 +226,23 @@ def parse_tree_output(cmdline:str):
     visitor = ShellVisitor()
     return visitor.visitProgram(tree)
 
+
 def eval(cmdline, out):
     # raw_commands = parse_raw_commands(cmdline)
-    print(parse_tree_output(cmdline))
-    # try:
-    #     parse_commands(raw_commands, out)
-    # except ValueError as e:
-    #     print(e)
+    commands = parse_tree(cmdline)
+    print(commands)
+    try:
+        parse_tree_commands(commands, out)
+    except ValueError as err:
+        print(err)
 
 
 def run_eval(cmd_str: str):  # function to call eval() and incorporate error handling
     out = deque()
     try:
         eval(cmd_str, out)
-        # while len(out) > 0:
-        #     print(out.popleft(), end="")
+        while len(out) > 0:
+            print(out.popleft(), end="")
     except ValueError as e:
         print(e)
 

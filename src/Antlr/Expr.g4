@@ -7,13 +7,15 @@ command: simpleCommand
 
 simpleCommand: CMD+ (arg)*;
 
-arg: STRING | UNQUOTED_STRING;
+arg: STRING | UNQUOTED_STRING|FIlE;
 
 OPERATOR : '>'|'|'|';';
 
-CMD: 'echo'|'ls'|'grep'|'cat';
+CMD: 'echo'|'ls'|'grep'|'cat'|'cd';
 
 UNQUOTED_STRING: [a-zA-Z0-9_]+;
+
+FIlE: ([a-zA-Z0-9_]+'.'[a-zA-Z0-9_]+);
 
 STRING: '"' ~["]* '"';
 
