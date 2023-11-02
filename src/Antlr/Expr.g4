@@ -1,20 +1,35 @@
-grammar Expr;		
-
+grammar Expr;
 program: command*;
+command: pipe | command ';' command | call;
+pipe: call '|' call | pipe '|' call;
+call:
+	whitespace? (redirection whitespace)* argument (
+		whitespace atom
+	)* whitespace?;
+whitespace: 'a';
+atom: redirection | argument;
+argument: (quoted | unquoted)+;
+redirection:
+	'<' whitespace? argument
+	| '>' whitespace? argument;
+quoted: singlequoted | doublequoted | backquoted;
+singlequoted: '\'' ~('\n' | '\'')* '\'';
+doublequoted: '"' ( backquoted | doublequotecontent)* '"';
+doublequotecontent: ~('\n' | '"' | '`');
+backquoted: '`' ~('\n' | '\'')* '`';
+// nonkeyword: ~[\r\n'"`|;]+;
 
-command: simpleCommand
-       | simpleCommand OPERATOR command;
-
-simpleCommand: CMD+ (arg)*;
-
-arg: STRING | UNQUOTED_STRING;
-
-OPERATOR : '>'|'|'|';';
-
-CMD: 'echo'|'ls'|'grep'|'cat';
-
-UNQUOTED_STRING: [a-zA-Z0-9_]+;
-
-STRING: '"' ~["]* '"';
-
-WS: [ \t\r\n]+ -> skip;
+unquoted:
+	~(
+		'\t'
+		| '\r'
+		| '\n'
+		| '\''
+		| '"'
+		| '`'
+		| ';'
+		| '|'
+		| '<'
+		| '>'
+	)+;
+application: 'echo' | 'ls' | 'grep' | 'cat';
