@@ -18,7 +18,7 @@ class ShellVisitor(ExprVisitor):
         self.commands = []
 
     def visitProgram(self, ctx:ExprParser.ProgramContext):
-        print(ctx.toStringTree(recog=ctx.parser))
+        # print(ctx.toStringTree(recog=ctx.parser))
         super().visitProgram(ctx)
         return self.commands
 

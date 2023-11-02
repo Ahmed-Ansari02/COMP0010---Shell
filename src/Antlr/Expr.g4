@@ -1,35 +1,24 @@
 grammar Expr;
-program: command*;
+
 command: pipe | command ';' command | call;
 pipe: call '|' call | pipe '|' call;
+//call: ( NONKEYWORD | quoted)*;
 call:
-	whitespace? (redirection whitespace)* argument (
-		whitespace atom
-	)* whitespace?;
-whitespace: 'a';
+    WHITESPACE?
+    (redirection WHITESPACE)*
+    argument
+    (WHITESPACE atom)*
+    WHITESPACE?;
+WHITESPACE: [ \t]+;
+//NONKEYWORD: ~[\r\n'"`;|]*;
 atom: redirection | argument;
-argument: (quoted | unquoted)+;
+argument: (quoted | UNQUOTED)+;
+UNQUOTED: ~[\t\r\n'"`|;<>]+;
 redirection:
-	'<' whitespace? argument
-	| '>' whitespace? argument;
-quoted: singlequoted | doublequoted | backquoted;
-singlequoted: '\'' ~('\n' | '\'')* '\'';
-doublequoted: '"' ( backquoted | doublequotecontent)* '"';
-doublequotecontent: ~('\n' | '"' | '`');
-backquoted: '`' ~('\n' | '\'')* '`';
-// nonkeyword: ~[\r\n'"`|;]+;
-
-unquoted:
-	~(
-		'\t'
-		| '\r'
-		| '\n'
-		| '\''
-		| '"'
-		| '`'
-		| ';'
-		| '|'
-		| '<'
-		| '>'
-	)+;
-application: 'echo' | 'ls' | 'grep' | 'cat';
+	'<' WHITESPACE? argument
+	| '>' WHITESPACE? argument;
+quoted: SINGLE_QUOTED | DOUBLEQUOTED | BACKQUOTED;
+SINGLE_QUOTED: '\'' ~[\n']* '\'';
+DOUBLEQUOTED: '"' ( BACKQUOTED | ~[\n"`]+ )* '"';
+BACKQUOTED: '`' ~[\n']* '`';
+WS: [ \t\r\n]+ -> skip;

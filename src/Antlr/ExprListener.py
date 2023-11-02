@@ -8,15 +8,6 @@ else:
 # This class defines a complete listener for a parse tree produced by ExprParser.
 class ExprListener(ParseTreeListener):
 
-    # Enter a parse tree produced by ExprParser#program.
-    def enterProgram(self, ctx:ExprParser.ProgramContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#program.
-    def exitProgram(self, ctx:ExprParser.ProgramContext):
-        pass
-
-
     # Enter a parse tree produced by ExprParser#command.
     def enterCommand(self, ctx:ExprParser.CommandContext):
         pass
@@ -41,15 +32,6 @@ class ExprListener(ParseTreeListener):
 
     # Exit a parse tree produced by ExprParser#call.
     def exitCall(self, ctx:ExprParser.CallContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#whitespace.
-    def enterWhitespace(self, ctx:ExprParser.WhitespaceContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#whitespace.
-    def exitWhitespace(self, ctx:ExprParser.WhitespaceContext):
         pass
 
 
@@ -86,60 +68,6 @@ class ExprListener(ParseTreeListener):
 
     # Exit a parse tree produced by ExprParser#quoted.
     def exitQuoted(self, ctx:ExprParser.QuotedContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#singlequoted.
-    def enterSinglequoted(self, ctx:ExprParser.SinglequotedContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#singlequoted.
-    def exitSinglequoted(self, ctx:ExprParser.SinglequotedContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#doublequoted.
-    def enterDoublequoted(self, ctx:ExprParser.DoublequotedContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#doublequoted.
-    def exitDoublequoted(self, ctx:ExprParser.DoublequotedContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#doublequotecontent.
-    def enterDoublequotecontent(self, ctx:ExprParser.DoublequotecontentContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#doublequotecontent.
-    def exitDoublequotecontent(self, ctx:ExprParser.DoublequotecontentContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#backquoted.
-    def enterBackquoted(self, ctx:ExprParser.BackquotedContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#backquoted.
-    def exitBackquoted(self, ctx:ExprParser.BackquotedContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#unquoted.
-    def enterUnquoted(self, ctx:ExprParser.UnquotedContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#unquoted.
-    def exitUnquoted(self, ctx:ExprParser.UnquotedContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#application.
-    def enterApplication(self, ctx:ExprParser.ApplicationContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#application.
-    def exitApplication(self, ctx:ExprParser.ApplicationContext):
         pass
 
 
