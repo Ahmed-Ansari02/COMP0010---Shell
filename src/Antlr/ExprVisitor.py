@@ -9,6 +9,11 @@ else:
 
 class ExprVisitor(ParseTreeVisitor):
 
+    # Visit a parse tree produced by ExprParser#redirection.
+    def visitRedirection(self, ctx:ExprParser.RedirectionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by ExprParser#command.
     def visitCommand(self, ctx:ExprParser.CommandContext):
         return self.visitChildren(ctx)
@@ -31,11 +36,6 @@ class ExprVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by ExprParser#argument.
     def visitArgument(self, ctx:ExprParser.ArgumentContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by ExprParser#redirection.
-    def visitRedirection(self, ctx:ExprParser.RedirectionContext):
         return self.visitChildren(ctx)
 
 

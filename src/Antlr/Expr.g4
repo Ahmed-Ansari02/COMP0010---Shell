@@ -1,5 +1,9 @@
 grammar Expr;
 
+//command: 'hello';
+redirection:
+	'<' WHITESPACE? argument
+	| '>' WHITESPACE? argument;
 command: pipe | command ';' command | call;
 pipe: call '|' call | pipe '|' call;
 //call: ( NONKEYWORD | quoted)*;
@@ -10,15 +14,11 @@ call:
     (WHITESPACE atom)*
     WHITESPACE?;
 WHITESPACE: [ \t]+;
-//NONKEYWORD: ~[\r\n'"`;|]*;
 atom: redirection | argument;
-argument: (quoted | UNQUOTED)+;
-UNQUOTED: ~[\t\r\n'"`|;<>]+;
-redirection:
-	'<' WHITESPACE? argument
-	| '>' WHITESPACE? argument;
-quoted: SINGLE_QUOTED | DOUBLEQUOTED | BACKQUOTED;
+argument: (quoted | UNQUOTED)*;
+UNQUOTED: ~[ \t\r\n'"`|;<>]+;
+quoted: SINGLE_QUOTED | DOUBLE_QUOTED | BACK_QUOTED;
 SINGLE_QUOTED: '\'' ~[\n']* '\'';
-DOUBLEQUOTED: '"' ( BACKQUOTED | ~[\n"`]+ )* '"';
-BACKQUOTED: '`' ~[\n']* '`';
+DOUBLE_QUOTED: '"' ( BACK_QUOTED | ~[\n"`]+ )* '"';
+BACK_QUOTED: '`' ~[\n`]* '`';
 WS: [ \t\r\n]+ -> skip;

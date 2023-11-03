@@ -8,6 +8,15 @@ else:
 # This class defines a complete listener for a parse tree produced by ExprParser.
 class ExprListener(ParseTreeListener):
 
+    # Enter a parse tree produced by ExprParser#redirection.
+    def enterRedirection(self, ctx:ExprParser.RedirectionContext):
+        pass
+
+    # Exit a parse tree produced by ExprParser#redirection.
+    def exitRedirection(self, ctx:ExprParser.RedirectionContext):
+        pass
+
+
     # Enter a parse tree produced by ExprParser#command.
     def enterCommand(self, ctx:ExprParser.CommandContext):
         pass
@@ -50,15 +59,6 @@ class ExprListener(ParseTreeListener):
 
     # Exit a parse tree produced by ExprParser#argument.
     def exitArgument(self, ctx:ExprParser.ArgumentContext):
-        pass
-
-
-    # Enter a parse tree produced by ExprParser#redirection.
-    def enterRedirection(self, ctx:ExprParser.RedirectionContext):
-        pass
-
-    # Exit a parse tree produced by ExprParser#redirection.
-    def exitRedirection(self, ctx:ExprParser.RedirectionContext):
         pass
 
 
