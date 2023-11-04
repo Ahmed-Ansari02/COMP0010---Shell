@@ -9,15 +9,15 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
-public class ExprLexer extends Lexer {
+public class ShellGrammarLexer extends Lexer {
 	static { RuntimeMetaData.checkVersion("4.13.1", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, WHITESPACE=5, CMD=6, UNQUOTED=7, SINGLE_QUOTED=8, 
-		DOUBLE_QUOTED=9, BACK_QUOTED=10, WS=11;
+		T__0=1, T__1=2, T__2=3, T__3=4, WHITESPACE=5, APPLICATION=6, UNQUOTED=7, 
+		SINGLE_QUOTED=8, DOUBLE_QUOTED=9, BACK_QUOTED=10, WS=11;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
 	};
@@ -28,8 +28,8 @@ public class ExprLexer extends Lexer {
 
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"T__0", "T__1", "T__2", "T__3", "WHITESPACE", "CMD", "UNQUOTED", "SINGLE_QUOTED", 
-			"DOUBLE_QUOTED", "BACK_QUOTED", "WS"
+			"T__0", "T__1", "T__2", "T__3", "WHITESPACE", "APPLICATION", "UNQUOTED", 
+			"SINGLE_QUOTED", "DOUBLE_QUOTED", "BACK_QUOTED", "WS"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -42,8 +42,8 @@ public class ExprLexer extends Lexer {
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, "WHITESPACE", "CMD", "UNQUOTED", "SINGLE_QUOTED", 
-			"DOUBLE_QUOTED", "BACK_QUOTED", "WS"
+			null, null, null, null, null, "WHITESPACE", "APPLICATION", "UNQUOTED", 
+			"SINGLE_QUOTED", "DOUBLE_QUOTED", "BACK_QUOTED", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -81,7 +81,7 @@ public class ExprLexer extends Lexer {
 	}
 
 
-	public ExprLexer(CharStream input) {
+	public ShellGrammarLexer(CharStream input) {
 		super(input);
 		_interp = new LexerATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
