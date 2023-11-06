@@ -44,15 +44,6 @@ class ShellGrammarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by ShellGrammarParser#atom.
-    def enterAtom(self, ctx:ShellGrammarParser.AtomContext):
-        pass
-
-    # Exit a parse tree produced by ShellGrammarParser#atom.
-    def exitAtom(self, ctx:ShellGrammarParser.AtomContext):
-        pass
-
-
     # Enter a parse tree produced by ShellGrammarParser#argument.
     def enterArgument(self, ctx:ShellGrammarParser.ArgumentContext):
         pass

@@ -7,13 +7,28 @@ class Application:
     def run(self, argument: str, out: deque) -> None:
         pass
 
+class Call(Application):
+    def __init__(self, arguments: [str]) -> None:
+        self.command = arguments[0]
+        self.arguments = arguments[1:]
+
+    def run(self, argument: str, out: deque) -> None:
+        pass
+
+    def __str__(self) -> str:
+        return "Call({command}, {arguments})".format(command=self.command, arguments=self.arguments)
+
 class Pipe(Application):
+
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
 
     def run(self, argument: str, out: deque) -> None:
         pass
     
     def __str__(self) -> str:
-        return "Pipe"
+        return "Pipe({left}, {right})".format(left=self.left, right=self.right)
 
 class GreaterThan(Application):
 
@@ -24,6 +39,10 @@ class GreaterThan(Application):
         return "GreaterThan"
 
 class Semicolon(Application):
+
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
 
     def run(self, argument: [str], out: deque) -> None:
         pass
@@ -41,7 +60,7 @@ class Semicolon(Application):
         #     argument[0].run([right.left.value, right.right.value], out)
     
     def __str__(self) -> str:
-        return "Semicolon"
+        return "Semicolon({left}, {right})".format(left=self.left, right=self.right)
 
 class echo(Application):
     def run(self, argument: [str], out: deque) -> None:
