@@ -8,12 +8,12 @@ else:
 # This class defines a complete listener for a parse tree produced by ShellGrammarParser.
 class ShellGrammarListener(ParseTreeListener):
 
-    # Enter a parse tree produced by ShellGrammarParser#redirection.
-    def enterRedirection(self, ctx:ShellGrammarParser.RedirectionContext):
+    # Enter a parse tree produced by ShellGrammarParser#s.
+    def enterS(self, ctx:ShellGrammarParser.SContext):
         pass
 
-    # Exit a parse tree produced by ShellGrammarParser#redirection.
-    def exitRedirection(self, ctx:ShellGrammarParser.RedirectionContext):
+    # Exit a parse tree produced by ShellGrammarParser#s.
+    def exitS(self, ctx:ShellGrammarParser.SContext):
         pass
 
 
@@ -23,6 +23,15 @@ class ShellGrammarListener(ParseTreeListener):
 
     # Exit a parse tree produced by ShellGrammarParser#command.
     def exitCommand(self, ctx:ShellGrammarParser.CommandContext):
+        pass
+
+
+    # Enter a parse tree produced by ShellGrammarParser#redirection.
+    def enterRedirection(self, ctx:ShellGrammarParser.RedirectionContext):
+        pass
+
+    # Exit a parse tree produced by ShellGrammarParser#redirection.
+    def exitRedirection(self, ctx:ShellGrammarParser.RedirectionContext):
         pass
 
 

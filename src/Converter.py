@@ -17,8 +17,10 @@ class Converter(ShellGrammarVisitor):
             return self.visit(ctx.call())
         elif ctx.pipe():
             return self.visit(ctx.pipe())
+        elif ctx.getChildCount() == 0:
+            return None
         else:
-            return Semicolon(self.visit(ctx.command(0)), self.visit(ctx.command(1)))
+            return Seq(self.visit(ctx.command(0)), self.visit(ctx.command(1)))
             
     def visitPipe(self, ctx:ShellGrammarParser.PipeContext):
         if ctx.pipe():

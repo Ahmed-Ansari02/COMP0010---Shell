@@ -1,9 +1,10 @@
 grammar ShellGrammar;
 
+s : command EOF ;
+command: pipe | command ';' command | call;
 redirection:
 	'<' WHITESPACE? argument
 	| '>' WHITESPACE? argument;
-command: pipe | command ';' command | call;
 pipe: call '|' call | pipe '|' call;
 call:
 	WHITESPACE? (redirection WHITESPACE)*

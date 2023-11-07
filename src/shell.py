@@ -8,6 +8,7 @@ from antlr4 import *
 
 from Applications import *
 from Converter import Converter
+from Evaluator import Evaluator
 import Antlr
 from Antlr.ShellGrammarLexer import ShellGrammarLexer
 from Antlr.ShellGrammarParser import ShellGrammarParser
@@ -22,29 +23,28 @@ APPLICATIONS = {
     "head": head,
     "tail": tail,
     "grep": grep,
-    "|": Pipe,
-    ">": GreaterThan,
-    ";": Semicolon
 }
 
-def parse_tree_output(cmdline:str):
+def convert(cmdline:str):
     input_stream = InputStream(cmdline)
     lexer = ShellGrammarLexer(input_stream)
     stream = CommonTokenStream(lexer)
     parser = ShellGrammarParser(stream)
     tree = parser.command()
+    print(tree.toStringTree(recog=parser))
     command = tree.accept(Converter())
     return command
 
+def evaluate(e):
+    return e.accept(Evaluator())
+
 def eval(cmd_str: str):  # function to call eval() and incorporate error handling
     try:
-        print(parse_tree_output(cmd_str))
+        print(evaluate(convert(cmd_str)))
     except ValueError as e:
         print(e)
 
-def check_args(
-    args_num, args
-):  # function to check command line arguments and incorporate error handling
+def check_args(args_num, args):  # function to check command line arguments and incorporate error handling
     if args_num != 2:
         raise ValueError("wrong number of command line arguments")
     if args[1] != "-c":

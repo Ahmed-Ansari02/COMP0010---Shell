@@ -9,13 +9,18 @@ else:
 
 class ShellGrammarVisitor(ParseTreeVisitor):
 
-    # Visit a parse tree produced by ShellGrammarParser#redirection.
-    def visitRedirection(self, ctx:ShellGrammarParser.RedirectionContext):
+    # Visit a parse tree produced by ShellGrammarParser#s.
+    def visitS(self, ctx:ShellGrammarParser.SContext):
         return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by ShellGrammarParser#command.
     def visitCommand(self, ctx:ShellGrammarParser.CommandContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by ShellGrammarParser#redirection.
+    def visitRedirection(self, ctx:ShellGrammarParser.RedirectionContext):
         return self.visitChildren(ctx)
 
 
