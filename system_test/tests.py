@@ -202,6 +202,7 @@ class TestShell(unittest.TestCase):
     def test_grep_re(self):
         cmdline = "grep 'A..' dir1/file1.txt"
         stdout = self.eval(cmdline)
+        print("\nstdout: ", stdout, "end")
         result = stdout.strip().split("\n")
         self.assertEqual(result, ["AAA", "AAA"])
 

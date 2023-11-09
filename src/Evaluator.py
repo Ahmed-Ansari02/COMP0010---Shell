@@ -19,12 +19,11 @@ class Evaluator(Visitor):
         right = seq.right
         return f"{left.accept(self)}\n{right.accept(self)}"
 
+    def visit_quoted(self, quoted):
+        return quoted.value
+
     def visit_pipe(self, pipe):
         left = pipe.left
         right = pipe.right
         right.arguments += left.accept(self)
         right.accept(self)
-
-
-
-        pass

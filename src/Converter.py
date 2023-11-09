@@ -5,7 +5,6 @@ from Antlr.ShellGrammarVisitor import ShellGrammarVisitor
 from Applications import *
 from antlr4 import *
 
-
 class Converter(ShellGrammarVisitor):
 
     def __init__(self):
@@ -27,20 +26,20 @@ class Converter(ShellGrammarVisitor):
             return Pipe(self.visit(ctx.pipe()), self.visit(ctx.call(0)))
         return Pipe(self.visit(ctx.call(0)), self.visit(ctx.call(1)))
     
-    # Visit a parse tree produced by ShellGrammarParser#call.)
     def visitCall(self, ctx:ShellGrammarParser.CallContext):
-        return Call([c.getText() for c in ctx.argument()])
-    # Visit a parse tree produced by ShellGrammarParser#atom.
-    # def visitAtom(self, ctx:ShellGrammarParser.AtomContext):
-    #     return self.visitChildren(ctx)
+        arguments = ctx.argument()
+        return Call([c.getText() if not c.quoted() else self.visit(c.quoted(0)) for c in arguments ])
 
-    # Visit a parse tree produced by ShellGrammarParser#argument.
     def visitArgument(self, ctx:ShellGrammarParser.ArgumentContext):
         return self.visitChildren(ctx)
 
-    # Visit a parse tree produced by ShellGrammarParser#quoted.
     def visitQuoted(self, ctx:ShellGrammarParser.QuotedContext):
-        return self.visitChildren(ctx)
+        if ctx.SINGLE_QUOTED():
+            return SingleQuoted(ctx.getText())
+        elif ctx.DOUBLE_QUOTED():
+            return DoubleQuoted(ctx.getText())
+        elif ctx.BACK_QUOTED():
+            return BackQuoted(ctx.getText())
     
 if __name__ == "__main__":
 

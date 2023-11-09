@@ -2,10 +2,51 @@ from collections import deque
 import os
 import re
 from os import listdir
+from typing import Any
 
 class Application:
     def run(self, argument: str, out: deque) -> None:
         pass
+
+class Quoted():
+    def __init__(self, value: str) -> None:
+        self.value = value
+    
+    def __str__(self) -> str:
+        return self.value[1:-1]
+
+    def accept(self, visitor):
+        return visitor.visit_call(self)
+
+class DoubleQuoted(Quoted):
+    def __init__(self, value: str) -> None:
+        self.value = value
+
+    def __str__(self) -> str:
+        return self.value[1:-1]
+
+    def accept(self, visitor):
+        return visitor.visit_call(self)
+
+class SingleQuoted(Quoted):
+    def __init__(self, value: str) -> None:
+        self.value = value
+
+    def __str__(self) -> str:
+        return self.value[1:-1]
+    
+    def accept(self, visitor):
+        return visitor.visit_call(self)
+
+class BackQuoted(Quoted):
+    def __init__(self, value: str) -> None:
+        self.value = value
+
+    def __str__(self) -> str:
+        return self.value[1:-1]
+    
+    def accept(self, visitor):
+        return visitor.visit_call(self)
 
 class Call(Application):
     def __init__(self, arguments: [str]) -> None:
@@ -64,7 +105,7 @@ class Seq(Application):
 
 class echo(Application):
     def run(self, argument: [str] = []) -> None:
-        return " ".join(argument)
+        return " ".join([str(arg) for arg in argument])
 
 class ls(Application):
     def run(self, argument: [str] = []) -> None:
@@ -86,26 +127,29 @@ class ls(Application):
 
 class cd(Application):
     
-    def run(self, argument: str = []) -> None:
+    def run(self, argument: [str] = []) -> None:
         if len(argument) == 0 or len(argument) > 1:
             raise ValueError("wrong number of command line arguments")
         os.chdir(argument[0])
+        return ""
 
 class pwd(Application):
-    def run(self, argument: str = []) -> None:
+    def run(self, argument: [str] = []) -> None:
         return os.getcwd() + "\n"
 
 class cat(Application):
-    def run(self, argument: str = []) -> None:
+    def run(self, argument: [str] = []) -> None:
+        out = ""
         for file in argument:
             try:
                 with open(file) as f:
-                    return f.read()
+                    out += f.read()
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
+        return out
 
 class head(Application):
-    def run(self, argument: str = []) -> None:
+    def run(self, argument: [str] = []) -> None:
         if len(argument) != 1 and len(argument) != 3:
             raise ValueError("wrong number of command line arguments")
         if len(argument) == 1:
@@ -128,7 +172,7 @@ class head(Application):
             raise ValueError(f"file {file} does not exist")
 
 class tail(Application):
-    def run(self, argument: str = []) -> None:
+    def run(self, argument: [str] = []) -> None:
         if len(argument) != 1 and len(argument) != 3:
             raise ValueError("wrong number of command line arguments")
         if len(argument) == 1:
@@ -152,8 +196,7 @@ class tail(Application):
             raise ValueError(f"file {file} does not exist")
 
 class grep(Application):
-    def run(self, argument: str = []) -> None:
-
+    def run(self, argument: [str] = [], stdin: [str] = []) -> None:
         if len(argument) < 2:
             raise ValueError("wrong number of command line arguments")
         pattern = argument[0]
@@ -164,11 +207,12 @@ class grep(Application):
                 with open(file) as f:
                     lines = f.readlines()
                     for line in lines:
+                        print(out)
                         if re.match(pattern, line):
                             if len(files) > 1:
-                                out += (f"{file}:{line}")
+                                out += f"{file}:{line}"
                             else:
-                                out += (line)
+                                out += line
                 return out
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
