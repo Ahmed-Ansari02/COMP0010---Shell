@@ -8,7 +8,12 @@ class Evaluator(Visitor):
     
     def visit_call(self, call):
         app = call.application
-        arguments = call.arguments
+        arguments = []
+        for arg in call.arguments:
+            if isinstance(arg, Quoted) or isinstance(arg, DoubleQuoted) or isinstance(arg, SingleQuoted) or isinstance(arg, BackQuoted):
+                arguments.append(arg.accept(self))
+            else:
+                arguments.append(arg)
         if app in APPLICATIONS.keys():
             return APPLICATIONS[app]().run(argument=arguments)
         else:
@@ -21,9 +26,10 @@ class Evaluator(Visitor):
 
     def visit_quoted(self, quoted):
         return quoted.value
+    
+
 
     def visit_pipe(self, pipe):
-        left = pipe.left
-        right = pipe.right
-        right.arguments += left.accept(self)
-        right.accept(self)
+        left_result = pipe.left.accept(self)
+        pipe.right.arguments.append(left_result)
+        return pipe.right.accept(self)        

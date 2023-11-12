@@ -26,7 +26,7 @@ class DoubleQuoted(Quoted):
         return self.value[1:-1]
 
     def accept(self, visitor):
-        return visitor.visit_call(self)
+        return visitor.visit_quoted(self)
 
 class SingleQuoted(Quoted):
     def __init__(self, value: str) -> None:
@@ -36,7 +36,7 @@ class SingleQuoted(Quoted):
         return self.value[1:-1]
     
     def accept(self, visitor):
-        return visitor.visit_call(self)
+        return visitor.visit_quoted(self)
 
 class BackQuoted(Quoted):
     def __init__(self, value: str) -> None:
@@ -46,7 +46,7 @@ class BackQuoted(Quoted):
         return self.value[1:-1]
     
     def accept(self, visitor):
-        return visitor.visit_call(self)
+        return visitor.visit_quoted(self)
 
 class Call(Application):
     def __init__(self, arguments: [str]) -> None:
@@ -130,7 +130,11 @@ class cd(Application):
     def run(self, argument: [str] = []) -> None:
         if len(argument) == 0 or len(argument) > 1:
             raise ValueError("wrong number of command line arguments")
-        os.chdir(argument[0])
+        try:
+            os.chdir(argument[0])
+        except FileNotFoundError:
+            raise ValueError(f"directory {argument[0]} does not exist")
+            
         return ""
 
 class pwd(Application):
@@ -196,27 +200,32 @@ class tail(Application):
             raise ValueError(f"file {file} does not exist")
 
 class grep(Application):
-    def run(self, argument: [str] = [], stdin: [str] = []) -> None:
+    def run(self, argument: [str] = []) -> None:
         if len(argument) < 2:
             raise ValueError("wrong number of command line arguments")
         pattern = argument[0]
+        pattern = pattern.replace('"', "")
         files = argument[1:]
         for file in files:
-            try:
-                out = ""
-                with open(file) as f:
-                    lines = f.readlines()
-                    for line in lines:
-                        print(out)
-                        if re.match(pattern, line):
-                            if len(files) > 1:
-                                out += f"{file}:{line}"
-                            else:
+            out = ""
+            if os.path.isfile(file):
+                try:
+                    with open(file) as f:
+                        lines = f.readlines()
+                        for line in lines:
+                            if re.match(pattern, line):
+                                if len(files) > 1:
+                                    out += f"{file}:{line}"
+                                else:
+                                    out += line
+                except FileNotFoundError:
+                    raise ValueError(f"file {file} does not exist")
+            else:
+                for line in file.splitlines():
+                    if re.match(pattern, line):
                                 out += line
-                return out
-            except FileNotFoundError:
-                raise ValueError(f"file {file} does not exist")
-            
+            return out
+                
 APPLICATIONS = {
     "pwd": pwd,
     "cd": cd,
