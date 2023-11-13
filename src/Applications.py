@@ -16,37 +16,54 @@ class Quoted():
         return self.value[1:-1]
 
     def accept(self, visitor):
-        return visitor.visit_call(self)
+        pass
 
 class DoubleQuoted(Quoted):
     def __init__(self, value: str) -> None:
         self.value = value
 
+    def __repr__(self) -> str:
+        return f"DoubleQuoted {self.value[1:-1]}"
+    
     def __str__(self) -> str:
         return self.value[1:-1]
 
     def accept(self, visitor):
-        return visitor.visit_call(self)
+        return visitor.visit_double_quoted(self)
 
 class SingleQuoted(Quoted):
     def __init__(self, value: str) -> None:
         self.value = value
 
+    def __repr__(self) -> str:
+        return f"SingleQuoted {self.value[1:-1]}"
+    
     def __str__(self) -> str:
         return self.value[1:-1]
     
     def accept(self, visitor):
-        return visitor.visit_call(self)
+        return visitor.visit_single_quoted(self)
 
 class BackQuoted(Quoted):
     def __init__(self, value: str) -> None:
         self.value = value
 
+    def __repr__(self) -> str:
+        return f"BackQuoted {self.value[1:-1]}"
+    
     def __str__(self) -> str:
         return self.value[1:-1]
     
     def accept(self, visitor):
-        return visitor.visit_call(self)
+        return visitor.visit_back_quoted(self)
+    
+'''
+Call(['echo', BackQuoted('echo'), hello])
+echo.run(['hello'])
+
+visit_call(Call(['echo', 'evaluate(convert(BackQuoted('echo hello world').value))', 'hello']))
+
+'''
 
 class Call(Application):
     def __init__(self, arguments: [str]) -> None:
@@ -70,14 +87,6 @@ class Pipe(Application):
     
     def __str__(self) -> str:
         return "Pipe({left}, {right})".format(left=self.left, right=self.right)
-
-class GreaterThan(Application):
-
-    def run(self, argument: str, out: deque) -> None:
-        pass
-
-    def __str__(self) -> str:
-        return "GreaterThan"
 
 class Seq(Application):
 
@@ -105,7 +114,7 @@ class Seq(Application):
 
 class echo(Application):
     def run(self, argument: [str] = []) -> None:
-        return " ".join([str(arg) for arg in argument])
+        return " ".join(argument)
 
 class ls(Application):
     def run(self, argument: [str] = []) -> None:
@@ -138,7 +147,7 @@ class pwd(Application):
         return os.getcwd() + "\n"
 
 class cat(Application):
-    def run(self, argument: [str] = []) -> None:
+    def run(self, argument: [str] = []) -> str:
         out = ""
         for file in argument:
             try:
@@ -149,7 +158,7 @@ class cat(Application):
         return out
 
 class head(Application):
-    def run(self, argument: [str] = []) -> None:
+    def run(self, argument: [str] = []) -> str:
         if len(argument) != 1 and len(argument) != 3:
             raise ValueError("wrong number of command line arguments")
         if len(argument) == 1:
@@ -206,8 +215,9 @@ class grep(Application):
                 out = ""
                 with open(file) as f:
                     lines = f.readlines()
+                    linesDict = {index: element for index, element in enumerate(lines)}
+                    checked = []
                     for line in lines:
-                        print(out)
                         if re.match(pattern, line):
                             if len(files) > 1:
                                 out += f"{file}:{line}"

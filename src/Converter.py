@@ -11,7 +11,6 @@ class Converter(ShellGrammarVisitor):
         super().__init__()
 
     def visitCommand(self, ctx:ShellGrammarParser.CommandContext):
-
         if ctx.call():
             return self.visit(ctx.call())
         elif ctx.pipe():
@@ -23,12 +22,15 @@ class Converter(ShellGrammarVisitor):
             
     def visitPipe(self, ctx:ShellGrammarParser.PipeContext):
         if ctx.pipe():
-            return Pipe(self.visit(ctx.pipe()), self.visit(ctx.call(0)))
-        return Pipe(self.visit(ctx.call(0)), self.visit(ctx.call(1)))
+            return Pipe(left=self.visit(ctx.pipe()), right=self.visit(ctx.call(0)))
+        return Pipe(left=self.visit(ctx.call(0)), right=self.visit(ctx.call(1)))
     
     def visitCall(self, ctx:ShellGrammarParser.CallContext):
         arguments = ctx.argument()
-        return Call([c.getText() if not c.quoted() else self.visit(c.quoted(0)) for c in arguments ])
+        if len(arguments) == 1 and arguments[0].quoted():
+            return self.visitQuoted(arguments[0].quoted(0))
+        return Call([argument.getText() if not argument.quoted() else self.visit(argument.quoted(0)) for argument in arguments])
+
 
     def visitArgument(self, ctx:ShellGrammarParser.ArgumentContext):
         return self.visitChildren(ctx)
@@ -40,25 +42,10 @@ class Converter(ShellGrammarVisitor):
             return DoubleQuoted(ctx.getText())
         elif ctx.BACK_QUOTED():
             return BackQuoted(ctx.getText())
-    
-if __name__ == "__main__":
 
-    def parse_tree_output(cmdline:str):
-        input_stream = InputStream(cmdline)
-        lexer = ShellGrammarLexer(input_stream)
-        stream = CommonTokenStream(lexer)
-        parser = ShellGrammarParser(stream)
-        tree = parser.command()
-        command = tree.accept(Converter())
-        return command
+'''
+Call(['echo', Quoted('hello'), 'world'])
+app = 'echo'
+arguments = [Quoted('hello'), 'world']
 
-    def eval(cmd_str: str):  # function to call eval() and incorporate error handling
-        try:
-            print(parse_tree_output(cmd_str))
-        except ValueError as e:
-            print(e)
-
-    while True:
-            print(os.getcwd() + "> ", end="")
-            cmdline = input()
-            eval(cmdline)
+'''
