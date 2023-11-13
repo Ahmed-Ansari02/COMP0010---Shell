@@ -14,17 +14,19 @@ WHITESPACE: [ \t]+;
 APPLICATION: 'echo' | 'ls' | 'grep' | 'cat';
 argument: (APPLICATION | UNQUOTED | quoted)+;
 UNQUOTED: ~[ \t\r\n'"`|;<>]+;
-quoted: SINGLE_QUOTED | BACK_QUOTED | DOUBLE_QUOTED;
-SINGLE_QUOTED: '\'' ( SINGLE_QUOTED | ~[\n']+ )* '\'';
-//DOUBLE_QUOTED_BACK_QUOTES: '"' ( BACK_QUOTED | (~[\n"`]+) )* '"';
-DOUBLE_QUOTED: '"' ( DOUBLE_QUOTED | (~[\n"]+) )* '"';
-BACK_QUOTED: '`' ~[\n`]* '`';
-//SINGLE_QUOTED: '\'' ~[\n']* '\'';
+//quoted: SINGLE_QUOTED | BACK_QUOTED | DOUBLE_QUOTED;
+SINGLE_QUOTED: '\'' (NOT_SINGLE_QUOTED)* '\'';
+fragment NOT_SINGLE_QUOTED: ~[\n']+;
+fragment NOT_DOUBLE_QUOTED: ~[\n"]+;
+fragment NOT_BACK_QUOTED: ~[\n`]*;
+fragment NOT_DOUBLE_BACK_QUOTED: ~[\n"`]+;
+DOUBLE_QUOTED: '"' (NOT_DOUBLE_QUOTED)* '"' | '"' ( BACK_QUOTED | NOT_DOUBLE_BACK_QUOTED )* '"';
+BACK_QUOTED: '`' NOT_BACK_QUOTED '`';
 
-//quoted: single_quoted | back_quoted | double_quoted;
-//single_quoted: SINGLE_QUOTED;
-//double_quoted: DOUBLE_QUOTED_BACK_QUOTES | DOUBLE_QUOTED;
-//back_quoted: BACK_QUOTED;
+quoted: single_quoted | back_quoted | double_quoted;
+single_quoted: SINGLE_QUOTED;
+double_quoted: '"' (DOUBLE_QUOTED | UNQUOTED)+ '"' | DOUBLE_QUOTED;
+back_quoted: BACK_QUOTED;
 
 
 WS: [ \t\r\n]+ -> skip;

@@ -16,30 +16,35 @@ def convert(cmdline:str):
     return command
 
 def evaluate(e):
-    return e.accept(Evaluator())
+    return e.accept(Evaluator(backtick_root=True))
 
 
 class Evaluator(Visitor):
 
-    def __init__(self) -> None:
+    def __init__(self, backtick_root = False) -> None:
+        self.backtick_root = backtick_root
         super().__init__()
     
     def visit_call(self, call):
         app = call.application
-        arguments = call.arguments
-
-        app = app.accept(self) if isinstance(app, Quoted) else app
-        arguments = [argument.accept(self) if isinstance(argument, Quoted) else argument for argument in arguments]
-        
+        arguments = []
+        for arg in call.arguments:
+            if isinstance(arg, Quoted) or isinstance(arg, DoubleQuoted) or isinstance(arg, SingleQuoted) or isinstance(arg, BackQuoted):
+                arguments.append(arg.accept(self))
+            else:
+                arguments.append(arg)
         if app in APPLICATIONS.keys():
-            return APPLICATIONS[app]().run(argument=arguments)
+            return APPLICATIONS[app]().run(arguments)
         else:
             return " ".join([app] + arguments)
 
     def visit_seq(self, seq):
         left = seq.left
         right = seq.right
-        return f"{left.accept(self)}\n{right.accept(self)}"
+        if not self.backtick_root:
+            return f"{left.accept(self)}\n{right.accept(self)}"
+        else:
+            return f"{left.accept(self)} {right.accept(self)}"
 
     def visit_single_quoted(self, quoted):
         return quoted.value[1:-1]
@@ -51,7 +56,6 @@ class Evaluator(Visitor):
         return evaluate(convert((backquoted.value[1:-1])))
 
     def visit_pipe(self, pipe):
-        left = pipe.left
-        right = pipe.right
-        right.arguments += left.accept(self)
-        right.accept(self)
+        left_result = pipe.left.accept(self)
+        pipe.right.arguments.append(left_result)
+        return pipe.right.accept(self)        
