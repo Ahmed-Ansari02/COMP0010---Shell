@@ -1,5 +1,6 @@
 from Applications import *
 from Visitor import Visitor
+import io
 
 class Evaluator(Visitor):
 
@@ -31,5 +32,6 @@ class Evaluator(Visitor):
 
     def visit_pipe(self, pipe):
         left_result = pipe.left.accept(self)
-        pipe.right.arguments.append(left_result)
+        stdin = io.StringIO(left_result)
+        pipe.right.arguments.append(stdin)
         return pipe.right.accept(self)        

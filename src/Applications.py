@@ -1,22 +1,26 @@
 from collections import deque
 import os
 import re
+import io
 from os import listdir
 from typing import Any
+
 
 class Application:
     def run(self, argument: str, out: deque) -> None:
         pass
 
-class Quoted():
+
+class Quoted:
     def __init__(self, value: str) -> None:
         self.value = value
-    
+
     def __str__(self) -> str:
         return self.value[1:-1]
 
     def accept(self, visitor):
         return visitor.visit_call(self)
+
 
 class DoubleQuoted(Quoted):
     def __init__(self, value: str) -> None:
@@ -28,15 +32,17 @@ class DoubleQuoted(Quoted):
     def accept(self, visitor):
         return visitor.visit_quoted(self)
 
+
 class SingleQuoted(Quoted):
     def __init__(self, value: str) -> None:
         self.value = value
 
     def __str__(self) -> str:
         return self.value[1:-1]
-    
+
     def accept(self, visitor):
         return visitor.visit_quoted(self)
+
 
 class BackQuoted(Quoted):
     def __init__(self, value: str) -> None:
@@ -44,9 +50,10 @@ class BackQuoted(Quoted):
 
     def __str__(self) -> str:
         return self.value[1:-1]
-    
+
     def accept(self, visitor):
         return visitor.visit_quoted(self)
+
 
 class Call(Application):
     def __init__(self, arguments: [str]) -> None:
@@ -57,30 +64,32 @@ class Call(Application):
         return visitor.visit_call(self)
 
     def __str__(self) -> str:
-        return "Call({application}, {arguments})".format(application=self.application, arguments=self.arguments)
+        return "Call({application}, {arguments})".format(
+            application=self.application, arguments=self.arguments
+        )
+
 
 class Pipe(Application):
-
     def __init__(self, left, right):
         self.left = left
         self.right = right
 
     def accept(self, visitor):
         return visitor.visit_pipe(self)
-    
+
     def __str__(self) -> str:
         return "Pipe({left}, {right})".format(left=self.left, right=self.right)
 
-class GreaterThan(Application):
 
+class GreaterThan(Application):
     def run(self, argument: str, out: deque) -> None:
         pass
 
     def __str__(self) -> str:
         return "GreaterThan"
 
-class Seq(Application):
 
+class Seq(Application):
     def __init__(self, left, right):
         self.left = left
         self.right = right
@@ -94,22 +103,23 @@ class Seq(Application):
         #     parse_commands([left], out)
         # else:
         #     argument[0].run([left.left.value, left.right.value], out)
-        
+
         # if not(isinstance(right, Pipe) or isinstance(right, GreaterThan) or isinstance(right, Semicolon)):
         #     parse_commands([right], out)
         # else:
         #     argument[0].run([right.left.value, right.right.value], out)
-    
+
     def __str__(self) -> str:
         return "Seq({left}, {right})".format(left=self.left, right=self.right)
+
 
 class echo(Application):
     def run(self, argument: [str] = []) -> None:
         return " ".join([str(arg) for arg in argument])
 
+
 class ls(Application):
     def run(self, argument: [str] = []) -> None:
-
         if len(argument) == 0:
             ls_dir = os.getcwd()
         elif len(argument) > 1:
@@ -125,8 +135,8 @@ class ls(Application):
         except FileNotFoundError:
             raise ValueError(f"directory {ls_dir} does not exist")
 
+
 class cd(Application):
-    
     def run(self, argument: [str] = []) -> None:
         if len(argument) == 0 or len(argument) > 1:
             raise ValueError("wrong number of command line arguments")
@@ -134,12 +144,14 @@ class cd(Application):
             os.chdir(argument[0])
         except FileNotFoundError:
             raise ValueError(f"directory {argument[0]} does not exist")
-            
+
         return ""
+
 
 class pwd(Application):
     def run(self, argument: [str] = []) -> None:
         return os.getcwd() + "\n"
+
 
 class cat(Application):
     def run(self, argument: [str] = []) -> None:
@@ -151,6 +163,7 @@ class cat(Application):
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
         return out
+
 
 class head(Application):
     def run(self, argument: [str] = []) -> None:
@@ -175,6 +188,7 @@ class head(Application):
         except FileNotFoundError:
             raise ValueError(f"file {file} does not exist")
 
+
 class tail(Application):
     def run(self, argument: [str] = []) -> None:
         if len(argument) != 1 and len(argument) != 3:
@@ -194,38 +208,35 @@ class tail(Application):
                 lines = f.readlines()
                 display_length = min(len(lines), num_lines)
                 for i in range(0, display_length):
-                    out += (lines[len(lines) - display_length + i])
+                    out += lines[len(lines) - display_length + i]
             return out
         except FileNotFoundError:
             raise ValueError(f"file {file} does not exist")
+
 
 class grep(Application):
     def run(self, argument: [str] = []) -> None:
         if len(argument) < 2:
             raise ValueError("wrong number of command line arguments")
         pattern = argument[0]
-        pattern = pattern.replace('"', "")
         files = argument[1:]
         for file in files:
             out = ""
-            if os.path.isfile(file):
+            if not isinstance(file, io.StringIO):
                 try:
-                    with open(file) as f:
-                        lines = f.readlines()
-                        for line in lines:
-                            if re.match(pattern, line):
-                                if len(files) > 1:
-                                    out += f"{file}:{line}"
-                                else:
-                                    out += line
+                    file = open(file)
                 except FileNotFoundError:
                     raise ValueError(f"file {file} does not exist")
-            else:
-                for line in file.splitlines():
-                    if re.match(pattern, line):
-                                out += line
+            lines = file.readlines()
+            for line in lines:
+                if re.match(r'[\'\"]?'+ pattern.replace("'", "") + r'[\'\"]?', line):
+                    if len(files) > 1:
+                        out += f"{file}:{line}"
+                    else:
+                        out += line
             return out
-                
+
+
 APPLICATIONS = {
     "pwd": pwd,
     "cd": cd,
