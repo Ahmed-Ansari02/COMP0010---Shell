@@ -71,5 +71,32 @@ class ShellGrammarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by ShellGrammarParser#single_quoted.
+    def enterSingle_quoted(self, ctx:ShellGrammarParser.Single_quotedContext):
+        pass
+
+    # Exit a parse tree produced by ShellGrammarParser#single_quoted.
+    def exitSingle_quoted(self, ctx:ShellGrammarParser.Single_quotedContext):
+        pass
+
+
+    # Enter a parse tree produced by ShellGrammarParser#double_quoted.
+    def enterDouble_quoted(self, ctx:ShellGrammarParser.Double_quotedContext):
+        pass
+
+    # Exit a parse tree produced by ShellGrammarParser#double_quoted.
+    def exitDouble_quoted(self, ctx:ShellGrammarParser.Double_quotedContext):
+        pass
+
+
+    # Enter a parse tree produced by ShellGrammarParser#back_quoted.
+    def enterBack_quoted(self, ctx:ShellGrammarParser.Back_quotedContext):
+        pass
+
+    # Exit a parse tree produced by ShellGrammarParser#back_quoted.
+    def exitBack_quoted(self, ctx:ShellGrammarParser.Back_quotedContext):
+        pass
+
+
 
 del ShellGrammarParser
