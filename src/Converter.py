@@ -16,6 +16,8 @@ class Converter(ShellGrammarVisitor):
             return self.visit(ctx.call())
         elif ctx.pipe():
             return self.visit(ctx.pipe())
+        elif ctx.redirection():
+            return self.visit(ctx.redirection())
         elif ctx.getChildCount() == 0:
             return None
         else:
@@ -25,8 +27,20 @@ class Converter(ShellGrammarVisitor):
         if ctx.pipe():
             return Pipe(self.visit(ctx.pipe()), self.visit(ctx.call(0)))
         return Pipe(self.visit(ctx.call(0)), self.visit(ctx.call(1)))
+    def visitRedirection(self,ctx:ShellGrammarParser.RedirectionContext):
+        if ctx.redirection():
+            return Redirection(self.visit(ctx.redirection(0),self.visit(ctx.argument())))
     
     def visitCall(self, ctx:ShellGrammarParser.CallContext):
+        arr=[]
+        for argument in arguments:
+            if argument.quoted():
+                arr.append(self.visit(argument.quoted(0)))
+            else:
+                arr.append(argument.getText())
+                
+            else:
+                argument.getText()
         arguments = ctx.argument()
         return Call([c.getText() if not c.quoted() else self.visit(c.quoted(0)) for c in arguments ])
 

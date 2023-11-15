@@ -8,8 +8,18 @@ class Application:
     def run(self, argument: str, out: deque) -> None:
         pass
 
+class Redirection(Application):
+    def __init__(self, left, right) -> None:
+        self.left = left
+        self.right = right
+    def accept(self, visitor):
+        return visitor.visit_redirection
+    def __str__(self,left,right)->str:
+        return f"Redirection({left},{right})"
+
+
 class Quoted():
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: str):
         self.value = value
     
     def __str__(self) -> str:
