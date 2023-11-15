@@ -216,12 +216,12 @@ class tail(Application):
 
 class grep(Application):
     def run(self, argument: [str] = []) -> None:
+        out = ""
         if len(argument) < 2:
             raise ValueError("wrong number of command line arguments")
         pattern = argument[0]
         files = argument[1:]
         for file in files:
-            out = ""
             if not isinstance(file, io.StringIO):
                 try:
                     file = open(file)
@@ -229,13 +229,12 @@ class grep(Application):
                     raise ValueError(f"file {file} does not exist")
             lines = file.readlines()
             for line in lines:
-                if re.match(r'[\'\"]?'+ pattern.replace("'", "") + r'[\'\"]?', line):
+                if re.search(pattern, line):
                     if len(files) > 1:
-                        out += f"{file}:{line}"
+                        out += f"{file.name}:{line}"
                     else:
                         out += line
-            return out
-
+        return out
 
 APPLICATIONS = {
     "pwd": pwd,
