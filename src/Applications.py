@@ -7,7 +7,7 @@ from typing import Any
 
 
 class Application:
-    def run(self, argument: str, out: deque) -> None:
+    def run(self, arguments: str, out: deque) -> None:
         pass
 
 
@@ -19,18 +19,22 @@ class Quoted:
         return self.value[1:-1]
 
     def accept(self, visitor):
-        return visitor.visit_call(self)
+        pass
+
 
 
 class DoubleQuoted(Quoted):
     def __init__(self, value: str) -> None:
         self.value = value
-
+        
     def __str__(self) -> str:
-        return self.value[1:-1]
+        return f"DoubleQuoted({self.value[1:-1]})"
+
+    def __repr__(self) -> str:
+        return f"DoubleQuoted({self.value[1:-1]})"
 
     def accept(self, visitor):
-        return visitor.visit_quoted(self)
+        return visitor.visit_double_quoted(self)
 
 
 class SingleQuoted(Quoted):
@@ -38,10 +42,13 @@ class SingleQuoted(Quoted):
         self.value = value
 
     def __str__(self) -> str:
-        return self.value[1:-1]
+        return f"SingleQuoted({self.value[1:-1]})"
 
+    def __repr__(self) -> str:
+        return f"SingleQuoted({self.value[1:-1]})"
+    
     def accept(self, visitor):
-        return visitor.visit_quoted(self)
+        return visitor.visit_single_quoted(self)
 
 
 class BackQuoted(Quoted):
@@ -49,10 +56,13 @@ class BackQuoted(Quoted):
         self.value = value
 
     def __str__(self) -> str:
-        return self.value[1:-1]
+        return f"BackQuoted({self.value[1:-1]})"
+    
+    def __repr__(self) -> str:
+        return f"BackQuoted({self.value[1:-1]})"
 
     def accept(self, visitor):
-        return visitor.visit_quoted(self)
+        return visitor.visit_back_quoted(self)
 
 
 class Call(Application):
@@ -80,15 +90,6 @@ class Pipe(Application):
     def __str__(self) -> str:
         return "Pipe({left}, {right})".format(left=self.left, right=self.right)
 
-
-class GreaterThan(Application):
-    def run(self, argument: str, out: deque) -> None:
-        pass
-
-    def __str__(self) -> str:
-        return "GreaterThan"
-
-
 class Seq(Application):
     def __init__(self, left, right):
         self.left = left
@@ -96,36 +97,25 @@ class Seq(Application):
 
     def accept(self, visitor):
         return visitor.visit_seq(self)
-        # print("ARGUMENT: ", argument)
-        # left = argument[0]
-        # right = argument[1]
-        # if not(isinstance(left, Pipe) or isinstance(left, GreaterThan) or isinstance(left, Semicolon)):
-        #     parse_commands([left], out)
-        # else:
-        #     argument[0].run([left.left.value, left.right.value], out)
-
-        # if not(isinstance(right, Pipe) or isinstance(right, GreaterThan) or isinstance(right, Semicolon)):
-        #     parse_commands([right], out)
-        # else:
-        #     argument[0].run([right.left.value, right.right.value], out)
-
+    
     def __str__(self) -> str:
         return "Seq({left}, {right})".format(left=self.left, right=self.right)
 
 
 class echo(Application):
-    def run(self, argument: [str] = []) -> None:
-        return " ".join([str(arg) for arg in argument])
+    def run(self, arguments: [str] = []) -> None:
+        return " ".join(arguments)
 
 
 class ls(Application):
     def run(self, argument: [str] = []) -> None:
+
         if len(argument) == 0:
             ls_dir = os.getcwd()
-        elif len(argument) > 1:
+        elif len(arguments) > 1:
             raise ValueError("wrong number of command line arguments")
         else:
-            ls_dir = argument[0]
+            ls_dir = arguments[0]
         out = ""
         try:
             for f in listdir(ls_dir):
@@ -137,26 +127,27 @@ class ls(Application):
 
 
 class cd(Application):
-    def run(self, argument: [str] = []) -> None:
-        if len(argument) == 0 or len(argument) > 1:
+    
+    def run(self, arguments: [str] = []) -> None:
+        if len(arguments) == 0 or len(arguments) > 1:
             raise ValueError("wrong number of command line arguments")
         try:
-            os.chdir(argument[0])
+            os.chdir(arguments[0])
         except FileNotFoundError:
             raise ValueError(f"directory {argument[0]} does not exist")
-
+            
         return ""
 
 
 class pwd(Application):
-    def run(self, argument: [str] = []) -> None:
+    def run(self, arguments: [str] = []) -> None:
         return os.getcwd() + "\n"
 
 
 class cat(Application):
-    def run(self, argument: [str] = []) -> None:
+    def run(self, arguments: [str] = []) -> str:
         out = ""
-        for file in argument:
+        for file in arguments:
             try:
                 with open(file) as f:
                     out += f.read()
@@ -166,18 +157,18 @@ class cat(Application):
 
 
 class head(Application):
-    def run(self, argument: [str] = []) -> None:
-        if len(argument) != 1 and len(argument) != 3:
+    def run(self, arguments: [str] = []) -> str:
+        if len(arguments) != 1 and len(arguments) != 3:
             raise ValueError("wrong number of command line arguments")
-        if len(argument) == 1:
+        if len(arguments) == 1:
             num_lines = 10
-            file = argument[0]
-        if len(argument) == 3:
-            if argument[0] != "-n":
+            file = arguments[0]
+        if len(arguments) == 3:
+            if arguments[0] != "-n":
                 raise ValueError("wrong flags")
             else:
-                num_lines = int(argument[1])
-                file = argument[2]
+                num_lines = int(arguments[1])
+                file = arguments[2]
         try:
             out = ""
             with open(file) as f:
@@ -190,18 +181,18 @@ class head(Application):
 
 
 class tail(Application):
-    def run(self, argument: [str] = []) -> None:
-        if len(argument) != 1 and len(argument) != 3:
+    def run(self, arguments: [str] = []) -> None:
+        if len(arguments) != 1 and len(arguments) != 3:
             raise ValueError("wrong number of command line arguments")
-        if len(argument) == 1:
+        if len(arguments) == 1:
             num_lines = 10
-            file = argument[0]
-        if len(argument) == 3:
-            if argument[0] != "-n":
+            file = arguments[0]
+        if len(arguments) == 3:
+            if arguments[0] != "-n":
                 raise ValueError("wrong flags")
             else:
-                num_lines = int(argument[1])
-                file = argument[2]
+                num_lines = int(arguments[1])
+                file = arguments[2]
         try:
             out = ""
             with open(file) as f:
@@ -219,6 +210,9 @@ class grep(Application):
         out = ""
         if len(argument) < 2:
             raise ValueError("wrong number of command line arguments")
+        pattern = arguments[0]
+        pattern = pattern.replace('"', "")
+        files = arguments[1:]
         pattern = argument[0]
         files = argument[1:]
         for file in files:

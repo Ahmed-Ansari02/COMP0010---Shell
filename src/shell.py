@@ -31,7 +31,8 @@ def convert(cmdline:str):
     stream = CommonTokenStream(lexer)
     parser = ShellGrammarParser(stream)
     tree = parser.command()
-    command = tree.accept(Converter()) #Visitor for the tree
+    command = tree.accept(Converter())
+    # print(command)
     return command
 
 def evaluate(e):
