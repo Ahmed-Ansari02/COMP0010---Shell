@@ -4,7 +4,7 @@ from antlr4 import *
 from Antlr.ShellGrammarLexer import ShellGrammarLexer
 from Antlr.ShellGrammarParser import ShellGrammarParser
 from Converter import Converter
-
+import io
 def convert(cmdline:str):
     input_stream = InputStream(cmdline)
     lexer = ShellGrammarLexer(input_stream)
@@ -12,7 +12,7 @@ def convert(cmdline:str):
     parser = ShellGrammarParser(stream)
     tree = parser.command()
     command = tree.accept(Converter())
-    # print(command)
+
     return command
 
 def evaluate(e):
@@ -37,6 +37,25 @@ class Evaluator(Visitor):
             return APPLICATIONS[app]().run(arguments)
         else:
             return " ".join([app] + arguments)
+    def visit_redirection(self, redirection):
+        arrow = redirection.arrow
+        call_arr = redirection.call_arr
+        io_file = redirection.io_file
+        if arrow == ">":
+            stdout = evaluate(Call(call_arr))
+            with open(io_file, 'w') as file:
+                file.write(stdout)
+        elif arrow == "<":
+            
+            with open(io_file, 'r') as file:
+                arguments = file.read()
+            call_arr.append(arguments)
+            
+            
+            return evaluate(Call(call_arr))
+            
+
+        return ""
 
     def visit_seq(self, seq):
         left = seq.left

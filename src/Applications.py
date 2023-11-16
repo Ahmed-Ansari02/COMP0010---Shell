@@ -9,13 +9,14 @@ class Application:
         pass
 
 class Redirection(Application):
-    def __init__(self, left, right) -> None:
-        self.left = left
-        self.right = right
+    def __init__(self,  call_arr, arrow, io_file) -> None:
+        self.arrow = arrow
+        self.io_file = io_file
+        self.call_arr = call_arr
     def accept(self, visitor):
-        return visitor.visit_redirection
-    def __str__(self,left,right)->str:
-        return f"Redirection({left},{right})"
+        return visitor.visit_redirection(self)
+    def __str__(self)->str:
+        return f"Redirection( {self.call_arr}, {self.arrow}, {self.io_file})"
 
 
 class Quoted():

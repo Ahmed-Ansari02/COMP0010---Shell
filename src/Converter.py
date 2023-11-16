@@ -15,8 +15,6 @@ class Converter(ShellGrammarVisitor):
             return self.visit(ctx.call())
         elif ctx.pipe():
             return self.visit(ctx.pipe())
-        elif ctx.redirection():
-            return self.visit(ctx.redirection())
         elif ctx.getChildCount() == 0:
             return None
         else:
@@ -28,25 +26,31 @@ class Converter(ShellGrammarVisitor):
         return Pipe(left=self.visit(ctx.call(0)), right=self.visit(ctx.call(1)))
     
     def visitCall(self, ctx:ShellGrammarParser.CallContext):
-        arr=[]
+        call_arr=[]
+        redirection_arr = []
+        arguments = ctx.argument()
         for argument in arguments:
             if argument.quoted():
-                arr.append(self.visit(argument.quoted(0)))
+                call_arr.append(self.visit(argument.quoted(0)))
             else:
-                arr.append(argument.getText())
-                
-            else:
-                argument.getText()
-        arguments = ctx.argument()
+                call_arr.append(argument.getText())
+        if ctx.redirection():
+            redirections = ctx.redirection()
+            for i in redirections:
+                redirection_arr.append(i.getText()[0])
+                redirection_arr.append(i.argument().getText())
+            return Redirection(call_arr,redirection_arr[0],redirection_arr[1])
+        return Call(call_arr)
+    
         # arguments = [argument.getText() if argument.getChildCount() == 0 else ''.join(argument) for argument in arguments]
         # print(arguments)
         # for argument in arguments:
         #     if argument.getChildCount() == 0:
         #         return Call([argument.getText()])
 
-        if len(arguments) == 1 and arguments[0].quoted():
-            return self.visitQuoted(arguments[0].quoted(0))
-        return Call([argument.getText() if not argument.quoted() else self.visit(argument.quoted(0)) for argument in arguments])
+        # if len(arguments) == 1 and arguments[0].quoted():
+        #     return self.visitQuoted(arguments[0].quoted(0))
+        # return Call([argument.getText() if not argument.quoted() else self.visit(argument.quoted(0)) for argument in arguments])
 
     def visitArgument(self, ctx:ShellGrammarParser.ArgumentContext):
         return self.visitChildren(ctx)
