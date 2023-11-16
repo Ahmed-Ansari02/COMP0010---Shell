@@ -39,20 +39,18 @@ class Evaluator(Visitor):
             return " ".join([app] + arguments)
     def visit_redirection(self, redirection):
         arrow = redirection.arrow
-        call_arr = redirection.call_arr
+        call_object = redirection.call_object
         io_file = redirection.io_file
         if arrow == ">":
-            stdout = Call(call_arr).accept(self)
+            stdout = call_object.accept(self)
             with open(io_file, 'w') as file:
                 file.write(stdout)
         elif arrow == "<":
             
             with open(io_file, 'r') as file:
-                arguments = file.read()
-            call_arr.append(arguments)
-            
-            
-            return Call(call_arr).accept(self)
+                argument = file.read()
+                call_object.arguments.append(argument)   
+            return call_object.accept(self)
             
 
         return ""

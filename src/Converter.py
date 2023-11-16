@@ -36,10 +36,13 @@ class Converter(ShellGrammarVisitor):
                 call_arr.append(argument.getText())
         if ctx.redirection():
             redirections = ctx.redirection()
+            if len(redirections)>1:
+                raise ValueError("Only one redirection may be used")
             for i in redirections:
+                
                 redirection_arr.append(i.getText()[0])
                 redirection_arr.append(i.argument().getText())
-            return Redirection(call_arr,redirection_arr[0],redirection_arr[1])
+            return Redirection(Call(call_arr),redirection_arr[0],redirection_arr[1])
         return Call(call_arr)
     
         # arguments = [argument.getText() if argument.getChildCount() == 0 else ''.join(argument) for argument in arguments]

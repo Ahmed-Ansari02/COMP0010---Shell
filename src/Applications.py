@@ -9,10 +9,10 @@ class Application:
         pass
 
 class Redirection(Application):
-    def __init__(self,  call_arr, arrow, io_file) -> None:
+    def __init__(self,  call_object, arrow, io_file) -> None:
         self.arrow = arrow
         self.io_file = io_file
-        self.call_arr = call_arr
+        self.call_object = call_object
     def accept(self, visitor):
         return visitor.visit_redirection(self)
     def __str__(self)->str:
