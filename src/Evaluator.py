@@ -18,7 +18,6 @@ def convert(cmdline:str):
 def evaluate(e):
     return e.accept(Evaluator(backtick_root=True))
 
-
 class Evaluator(Visitor):
 
     def __init__(self, backtick_root = False) -> None:
@@ -28,11 +27,15 @@ class Evaluator(Visitor):
     def visit_call(self, call):
         app = call.application
         arguments = []
+
         for arg in call.arguments:
             if isinstance(arg, Quoted) or isinstance(arg, DoubleQuoted) or isinstance(arg, SingleQuoted) or isinstance(arg, BackQuoted):
                 arguments.append(arg.accept(self))
             else:
                 arguments.append(arg)
+
+        if not isinstance(app, str):
+            app = app.accept(self)
         if app in APPLICATIONS.keys():
             return APPLICATIONS[app]().run(arguments)
         else:
@@ -67,7 +70,9 @@ class Evaluator(Visitor):
         return quoted.value[1:-1]
     
     def visit_double_quoted(self, quoted):
-        return quoted.value[1:-1]
+        value = quoted.value[1:-1].replace("\"", "")
+        tokens = re.findall(r'[^`]+|`[^`]+`', value)
+        return ''.join([token if (token[0] != '`' and token[-1] != '`') else evaluate(convert(token[1:-1])) for token in tokens])
 
     def visit_back_quoted(self, backquoted):
         return evaluate(convert((backquoted.value[1:-1])))

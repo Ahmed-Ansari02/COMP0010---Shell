@@ -44,20 +44,5 @@ class ShellGrammarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by ShellGrammarParser#single_quoted.
-    def visitSingle_quoted(self, ctx:ShellGrammarParser.Single_quotedContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by ShellGrammarParser#double_quoted.
-    def visitDouble_quoted(self, ctx:ShellGrammarParser.Double_quotedContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by ShellGrammarParser#back_quoted.
-    def visitBack_quoted(self, ctx:ShellGrammarParser.Back_quotedContext):
-        return self.visitChildren(ctx)
-
-
 
 del ShellGrammarParser
