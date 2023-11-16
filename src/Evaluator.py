@@ -42,7 +42,7 @@ class Evaluator(Visitor):
         call_arr = redirection.call_arr
         io_file = redirection.io_file
         if arrow == ">":
-            stdout = evaluate(Call(call_arr))
+            stdout = Call(call_arr).accept(self)
             with open(io_file, 'w') as file:
                 file.write(stdout)
         elif arrow == "<":
@@ -52,7 +52,7 @@ class Evaluator(Visitor):
             call_arr.append(arguments)
             
             
-            return evaluate(Call(call_arr))
+            return Call(call_arr).accept(self)
             
 
         return ""
