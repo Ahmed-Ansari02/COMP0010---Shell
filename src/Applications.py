@@ -232,14 +232,64 @@ class uniq(Application):
     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
         lines = stdin if stdin else []
         if arguments:
-            file = arguments[0]
+            filename = arguments[0]
+            try:
+                with open(filename) as f:
+                    lines = f.readlines()
+            except FileNotFoundError:
+                raise ValueError(f"file {filename} does not exist")
+        out = []
+        prev_line = None
+        for line in lines:
+            if line != prev_line:
+                out.append(line)
+            prev_line = line
+        return "".join(out)
+          
+
+class sort(Application):
+    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+        out = stdin if stdin else ""
+        if arguments:
+            for filename in arguments:
+                try:
+                    with open(filename) as f:
+                        out += "".join(sorted(f.readlines()))
+                except FileNotFoundError:
+                    raise ValueError(f"file {filename} does not exist")
+        return out
+
+class cut(Application):
+    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+        if len(arguments) != 2 or arguments[0] != "-f":
+            raise ValueError("wrong number of command line arguments or flags")
+        field = int(arguments[1])
+        lines = stdin if stdin else []
+        if len(arguments) > 2:
+            file = arguments[2]
             try:
                 with open(file) as f:
                     lines = f.readlines()
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
-        return list(dict.fromkeys(lines))
-          
+        out = []
+        for line in lines:
+            fields = line.split()
+            if field <= len(fields):
+                out.append(fields[field - 1])
+        return out
+
+class find(Application):
+    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+        if len(arguments) != 2:
+            raise ValueError("wrong number of command line arguments")
+        path, pattern = arguments
+        matches = []
+        for root, dirnames, filenames in os.walk(path):
+            for filename in fnmatch.filter(filenames, pattern):
+                matches.append(os.path.join(root, filename))
+        return matches
+    
 APPLICATIONS = {
     "pwd": pwd,
     "cd": cd,
@@ -250,4 +300,7 @@ APPLICATIONS = {
     "tail": tail,
     "grep": grep,
     "uniq": uniq,
+    "sort": sort,
+    "cut": cut,
+    "find": find,
 }
