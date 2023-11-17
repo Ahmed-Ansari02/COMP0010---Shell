@@ -8,6 +8,17 @@ class Application:
     def run(self, arguments: str, out: deque) -> None:
         pass
 
+class Redirection(Application):
+    def __init__(self,  call_object, arrow, io_file) -> None:
+        self.arrow = arrow
+        self.io_file = io_file
+        self.call_object = call_object
+    def accept(self, visitor):
+        return visitor.visit_redirection(self)
+    def __str__(self)->str:
+        return f"Redirection( {self.call_arr}, {self.arrow}, {self.io_file})"
+
+
 class Pattern():
     def __init__(self, pattern: str) -> None:
         self.raw_text = pattern
@@ -26,7 +37,7 @@ class Pattern():
         return visitor.visit_pattern(self)
     
 class Quoted():
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: str):
         self.value = value
     
     def __str__(self) -> str:
