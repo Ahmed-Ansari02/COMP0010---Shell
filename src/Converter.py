@@ -33,6 +33,8 @@ class Converter(ShellGrammarVisitor):
         for argument in arguments:
             if argument.quoted():
                 call_arr.append(self.visit(argument.quoted(0)))
+            elif "*" in argument.getText() or "?" in argument.getText() or "[" in argument.getText():
+                call_arr.append(Pattern(argument.getText()))
             else:
                 call_arr.append(argument.getText())
         if ctx.redirection():
