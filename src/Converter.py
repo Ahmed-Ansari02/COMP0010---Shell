@@ -35,7 +35,16 @@ class Converter(ShellGrammarVisitor):
 
         if len(arguments) == 1 and arguments[0].quoted():
             return self.visitQuoted(arguments[0].quoted(0))
-        return Call([argument.getText() if not argument.quoted() else self.visit(argument.quoted(0)) for argument in arguments])
+        new_arguments = []
+        for argument in arguments:
+            if argument.quoted():
+                new_arguments.append(self.visit(argument.quoted(0)))
+            elif "*" in argument.getText() or "?" in argument.getText() or "[" in argument.getText():
+                new_arguments.append(Pattern(argument.getText()))
+            else:
+                new_arguments.append(argument.getText())
+        return Call(new_arguments)
+        # return Call([argument.getText() if not argument.quoted() else self.visit(argument.quoted(0)) for argument in arguments])
 
     def visitArgument(self, ctx:ShellGrammarParser.ArgumentContext):
         return self.visitChildren(ctx)
@@ -47,3 +56,5 @@ class Converter(ShellGrammarVisitor):
             return DoubleQuoted(ctx.getText())
         elif ctx.BACK_QUOTED():
             return BackQuoted(ctx.getText())
+
+

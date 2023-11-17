@@ -8,6 +8,23 @@ class Application:
     def run(self, arguments: str, out: deque) -> None:
         pass
 
+class Pattern():
+    def __init__(self, pattern: str) -> None:
+        self.raw_text = pattern
+        self.pattern = pattern.replace("*", ".*").replace("?", ".")
+        dir = os.getcwd()
+        files_in_dir = listdir(dir)
+        self.files = []
+        for file in files_in_dir:
+            if re.match(self.pattern, file):
+                self.files.append(file)
+
+    def __str__(self) -> str:
+        return f"Pattern({self.files})"
+    
+    def accept(self, visitor):
+        return visitor.visit_pattern(self)
+    
 class Quoted():
     def __init__(self, value: str) -> None:
         self.value = value
@@ -210,7 +227,19 @@ class grep(Application):
                 return out
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
-            
+
+class uniq(Application):
+    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+        lines = stdin if stdin else []
+        if arguments:
+            file = arguments[0]
+            try:
+                with open(file) as f:
+                    lines = f.readlines()
+            except FileNotFoundError:
+                raise ValueError(f"file {file} does not exist")
+        return list(dict.fromkeys(lines))
+          
 APPLICATIONS = {
     "pwd": pwd,
     "cd": cd,
@@ -220,4 +249,5 @@ APPLICATIONS = {
     "head": head,
     "tail": tail,
     "grep": grep,
+    "uniq": uniq,
 }

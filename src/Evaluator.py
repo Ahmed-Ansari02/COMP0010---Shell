@@ -29,7 +29,7 @@ class Evaluator(Visitor):
         arguments = []
 
         for arg in call.arguments:
-            if isinstance(arg, Quoted) or isinstance(arg, DoubleQuoted) or isinstance(arg, SingleQuoted) or isinstance(arg, BackQuoted):
+            if not isinstance(arg, str):
                 arguments.append(arg.accept(self))
             else:
                 arguments.append(arg)
@@ -64,3 +64,7 @@ class Evaluator(Visitor):
         left_result = pipe.left.accept(self)
         pipe.right.arguments.append(left_result)
         return pipe.right.accept(self)        
+    
+    def visit_pattern(self, pattern):
+        print(pattern.files)
+        return ' '.join(pattern.files)
