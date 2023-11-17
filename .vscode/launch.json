@@ -1,0 +1,43 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "extensionHost",
+            "request": "launch",
+            "name": "Launch Extension",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}"
+            ],
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/out/main.cjs"
+            ],
+            "preLaunchTask": "build",
+            "trace": false,
+            "smartStep": true,
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run current Jest test",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--experimental-vm-modules",
+                "${workspaceRoot}/node_modules/.bin/jest",
+                "${fileBasenameNoExtension}.ts",
+                "--no-coverage",
+                "--runInBand"
+            ],
+            "console": "integratedTerminal",
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+            ],
+            "smartStep": true,
+            "trace": false
+        },
+    ]
+}
