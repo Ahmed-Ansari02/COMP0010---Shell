@@ -84,8 +84,10 @@ class Evaluator(Visitor):
 
     def visit_pipe(self, pipe):
         left_result = pipe.left.accept(self)
-        pipe.right.arguments.append(left_result)
-        return pipe.right.accept(self)        
+
+        stdin = io.StringIO(left_result)
+        pipe.right.arguments.append(stdin)
+        return pipe.right.accept(self)          
     
     def visit_pattern(self, pattern):
         # print(pattern.files)

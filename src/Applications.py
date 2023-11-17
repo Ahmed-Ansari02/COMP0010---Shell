@@ -1,12 +1,19 @@
 from collections import deque
 import os
 import re
+import io
 from os import listdir
 from typing import Any
+
 
 class Application:
     def run(self, arguments: str, out: deque) -> None:
         pass
+
+
+
+class Quoted:
+    def __init__(self, value: str) -> None:
 
 class Redirection(Application):
     def __init__(self,  call_object, arrow, io_file) -> None:
@@ -39,12 +46,14 @@ class Pattern():
 class Quoted():
     def __init__(self, value: str):
         self.value = value
-    
+
     def __str__(self) -> str:
         return self.value[1:-1]
 
     def accept(self, visitor):
         pass
+
+
 
 class DoubleQuoted(Quoted):
     def __init__(self, value: str) -> None:
@@ -59,6 +68,7 @@ class DoubleQuoted(Quoted):
     def accept(self, visitor):
         return visitor.visit_double_quoted(self)
 
+
 class SingleQuoted(Quoted):
     def __init__(self, value: str) -> None:
         self.value = value
@@ -71,6 +81,7 @@ class SingleQuoted(Quoted):
     
     def accept(self, visitor):
         return visitor.visit_single_quoted(self)
+
 
 class BackQuoted(Quoted):
     def __init__(self, value: str) -> None:
@@ -85,6 +96,7 @@ class BackQuoted(Quoted):
     def accept(self, visitor):
         return visitor.visit_back_quoted(self)
 
+
 class Call(Application):
     def __init__(self, arguments: [str]) -> None:
         self.application = arguments[0]
@@ -94,22 +106,23 @@ class Call(Application):
         return visitor.visit_call(self)
 
     def __str__(self) -> str:
-        return "Call({application}, {arguments})".format(application=self.application, arguments=self.arguments)
+        return "Call({application}, {arguments})".format(
+            application=self.application, arguments=self.arguments
+        )
+
 
 class Pipe(Application):
-
     def __init__(self, left, right):
         self.left = left
         self.right = right
 
     def accept(self, visitor):
         return visitor.visit_pipe(self)
-    
+
     def __str__(self) -> str:
         return "Pipe({left}, {right})".format(left=self.left, right=self.right)
 
 class Seq(Application):
-
     def __init__(self, left, right):
         self.left = left
         self.right = right
@@ -120,12 +133,15 @@ class Seq(Application):
     def __str__(self) -> str:
         return "Seq({left}, {right})".format(left=self.left, right=self.right)
 
+
 class echo(Application):
     def run(self, arguments: [str] = []) -> None:
         return " ".join(arguments)
 
+
 class ls(Application):
     def run(self, arguments: [str] = []) -> None:
+
         if len(arguments) == 0:
             ls_dir = os.getcwd()
         elif len(arguments) > 1:
@@ -141,6 +157,7 @@ class ls(Application):
         except FileNotFoundError:
             raise ValueError(f"directory {ls_dir} does not exist")
 
+
 class cd(Application):
     
     def run(self, arguments: [str] = []) -> None:
@@ -153,9 +170,11 @@ class cd(Application):
             
         return ""
 
+
 class pwd(Application):
     def run(self, arguments: [str] = []) -> None:
         return os.getcwd() + "\n"
+
 
 class cat(Application):
     def run(self, arguments: [str] = []) -> str:
@@ -167,6 +186,7 @@ class cat(Application):
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
         return out
+
 
 class head(Application):
     def run(self, arguments: [str] = []) -> str:
@@ -191,6 +211,7 @@ class head(Application):
         except FileNotFoundError:
             raise ValueError(f"file {file} does not exist")
 
+
 class tail(Application):
     def run(self, arguments: [str] = []) -> None:
         if len(arguments) != 1 and len(arguments) != 3:
@@ -210,34 +231,33 @@ class tail(Application):
                 lines = f.readlines()
                 display_length = min(len(lines), num_lines)
                 for i in range(0, display_length):
-                    out += (lines[len(lines) - display_length + i])
+                    out += lines[len(lines) - display_length + i]
             return out
         except FileNotFoundError:
             raise ValueError(f"file {file} does not exist")
 
+
 class grep(Application):
     def run(self, arguments: [str] = []) -> None:
+        out = ""
         if len(arguments) < 2:
             raise ValueError("wrong number of command line arguments")
-        pattern = arguments[0]
-        pattern = pattern.replace('"', "")
         files = arguments[1:]
+        pattern = re.compile(arguments[0])
         for file in files:
-            try:
-                out = ""
-                with open(file) as f:
-                    lines = f.readlines()
-                    linesDict = {index: element for index, element in enumerate(lines)}
-                    checked = []
-                    for line in lines:
-                        if re.match(pattern, line):
-                            if len(files) > 1:
-                                out += f"{file}:{line}"
-                            else:
-                                out += line
-                return out
-            except FileNotFoundError:
-                raise ValueError(f"file {file} does not exist")
+            if not isinstance(file, io.StringIO):
+                try:
+                    file = open(file)
+                except FileNotFoundError:
+                    raise ValueError(f"file {file} does not exist")
+            lines = file.readlines()
+            for line in lines:
+                if re.search(pattern, line):
+                    if len(files) > 1:
+                        out += f"{file.name}:{line}"
+                    else:
+                        out += line
+        return out
 
 class uniq(Application):
     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
