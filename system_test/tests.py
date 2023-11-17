@@ -402,7 +402,9 @@ class TestShell(unittest.TestCase):
     def test_input_redirection(self):
         cmdline = "cat < dir1/file2.txt"
         stdout = self.eval(cmdline)
+       
         result = stdout.strip()
+        
         self.assertEqual(result, "CCC")
 
     def test_input_redirection_infront(self):
