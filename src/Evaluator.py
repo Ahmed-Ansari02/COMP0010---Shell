@@ -49,14 +49,16 @@ class Evaluator(Visitor):
             with open(io_file, 'w') as file:
                 file.write(stdout)
         elif arrow == "<":
-            
-            with open(io_file, 'r') as file:
-                argument = file.read()
-                call_object.arguments.append(argument)   
+            try:
+                with open(io_file,'r') as file:
+                    pass
+            except FileNotFoundError:
+                raise(f"file {io_file} not found")
+            call_object.arguments.append(io_file)  
             return call_object.accept(self)
             
 
-        return ""
+        return
 
     def visit_seq(self, seq):
         left = seq.left
