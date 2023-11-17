@@ -108,9 +108,9 @@ class echo(Application):
 
 
 class ls(Application):
-    def run(self, argument: [str] = []) -> None:
+    def run(self, arguments: [str] = []) -> None:
 
-        if len(argument) == 0:
+        if len(arguments) == 0:
             ls_dir = os.getcwd()
         elif len(arguments) > 1:
             raise ValueError("wrong number of command line arguments")
@@ -134,7 +134,7 @@ class cd(Application):
         try:
             os.chdir(arguments[0])
         except FileNotFoundError:
-            raise ValueError(f"directory {argument[0]} does not exist")
+            raise ValueError(f"directory {arguments[0]} does not exist")
             
         return ""
 
@@ -206,15 +206,12 @@ class tail(Application):
 
 
 class grep(Application):
-    def run(self, argument: [str] = []) -> None:
+    def run(self, arguments: [str] = []) -> None:
         out = ""
-        if len(argument) < 2:
+        if len(arguments) < 2:
             raise ValueError("wrong number of command line arguments")
-        pattern = arguments[0]
-        pattern = pattern.replace('"', "")
         files = arguments[1:]
-        pattern = argument[0]
-        files = argument[1:]
+        pattern = re.compile(arguments[0])
         for file in files:
             if not isinstance(file, io.StringIO):
                 try:

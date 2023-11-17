@@ -42,8 +42,8 @@ class Converter(ShellGrammarVisitor):
 
     def visitQuoted(self, ctx:ShellGrammarParser.QuotedContext):
         if ctx.SINGLE_QUOTED():
-            return SingleQuoted(ctx.getText()[1:-1])
+            return SingleQuoted(ctx.getText())
         elif ctx.DOUBLE_QUOTED():
-            return DoubleQuoted(ctx.getText()[1:-1])
+            return DoubleQuoted(ctx.getText())
         elif ctx.BACK_QUOTED():
             return BackQuoted(ctx.getText())

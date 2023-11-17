@@ -32,7 +32,6 @@ def convert(cmdline:str):
     parser = ShellGrammarParser(stream)
     tree = parser.command()
     command = tree.accept(Converter())
-    # print(command)
     return command
 
 def evaluate(e):
