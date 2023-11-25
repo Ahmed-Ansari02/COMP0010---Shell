@@ -10,11 +10,6 @@ class Application:
     def run(self, arguments: str, out: deque) -> None:
         pass
 
-
-
-class Quoted:
-    def __init__(self, value: str) -> None:
-
 class Redirection(Application):
     def __init__(self,  call_object, arrow, io_file) -> None:
         self.arrow = arrow
