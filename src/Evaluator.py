@@ -29,7 +29,7 @@ class Evaluator(Visitor):
         arguments = []
 
         for arg in call.arguments:
-            if not isinstance(arg, str):
+            if not isinstance(arg, str) and not isinstance(arg, io.StringIO):
                 arguments.append(arg.accept(self))
             else:
                 arguments.append(arg)
