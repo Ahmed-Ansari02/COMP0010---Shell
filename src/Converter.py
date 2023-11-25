@@ -9,7 +9,8 @@ class Converter(ShellGrammarVisitor):
 
     def __init__(self):
         super().__init__()
-
+# Seq(Call(echo [hell, world]), Call(echo [hello, world]))
+# echo hell world ; echo hello world
     def visitCommand(self, ctx:ShellGrammarParser.CommandContext):
         if ctx.call():
             return self.visit(ctx.call())
@@ -32,6 +33,8 @@ class Converter(ShellGrammarVisitor):
         for argument in arguments:
             if argument.quoted():
                 call_arr.append(self.visit(argument.quoted(0)))
+            elif "*" in argument.getText() or "?" in argument.getText() or "[" in argument.getText():
+                call_arr.append(Pattern(argument.getText()))
             else:
                 call_arr.append(argument.getText())
         if ctx.redirection():
@@ -65,3 +68,5 @@ class Converter(ShellGrammarVisitor):
             return DoubleQuoted(ctx.getText())
         elif ctx.BACK_QUOTED():
             return BackQuoted(ctx.getText())
+
+

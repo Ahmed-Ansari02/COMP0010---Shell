@@ -209,6 +209,7 @@ class TestShell(unittest.TestCase):
         cmdline = "grep '...' dir1/file1.txt dir1/file2.txt"
         stdout = self.eval(cmdline)
         result = stdout.strip().split("\n")
+        
         self.assertEqual(
             result,
             [
