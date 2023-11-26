@@ -9,8 +9,7 @@ class Converter(ShellGrammarVisitor):
 
     def __init__(self):
         super().__init__()
-# Seq(Call(echo [hell, world]), Call(echo [hello, world]))
-# echo hell world ; echo hello world
+
     def visitCommand(self, ctx:ShellGrammarParser.CommandContext):
         if ctx.call():
             return self.visit(ctx.call())
