@@ -10,35 +10,49 @@ class Application:
     def run(self, arguments: str, out: deque) -> None:
         pass
 
+
 class Redirection(Application):
-    def __init__(self,  call_object, arrow, io_file) -> None:
+    def __init__(self, call_object, arrow, io_file) -> None:
         self.arrow = arrow
         self.io_file = io_file
         self.call_object = call_object
+
     def accept(self, visitor):
         return visitor.visit_redirection(self)
-    def __str__(self)->str:
+
+    def __str__(self) -> str:
         return f"Redirection( {self.call_arr}, {self.arrow}, {self.io_file})"
 
 
-class Pattern():
+class Pattern:
     def __init__(self, pattern: str) -> None:
+        self.files = []
         self.raw_text = pattern
         self.pattern = pattern.replace("*", ".*").replace("?", ".")
-        dir = os.getcwd()
-        files_in_dir = listdir(dir)
-        self.files = []
-        for file in files_in_dir:
-            if re.match(self.pattern, file):
-                self.files.append(file)
+        dir = re.search(r"(.*)/", self.pattern)
+        dir_path = ""
+        if dir == None:
+            dir = os.getcwd()
+        else:
+            dir = dir.group(1)
+            self.pattern = self.pattern[len(dir) + 1 :]
+            dir_path = dir + "/"
+        try:
+            files_in_dir = listdir(dir)
+            for file in files_in_dir:
+                if re.match(self.pattern, file):
+                    self.files.append(dir_path + file)
+        except FileNotFoundError:
+            raise ValueError(f"directory {dir} does not exist")
 
     def __str__(self) -> str:
         return f"Pattern({self.files})"
-    
+
     def accept(self, visitor):
         return visitor.visit_pattern(self)
-    
-class Quoted():
+
+
+class Quoted:
     def __init__(self, value: str):
         self.value = value
 
@@ -49,11 +63,10 @@ class Quoted():
         pass
 
 
-
 class DoubleQuoted(Quoted):
     def __init__(self, value: str) -> None:
         self.value = value
-        
+
     def __str__(self) -> str:
         return f"DoubleQuoted({self.value[1:-1]})"
 
@@ -73,7 +86,7 @@ class SingleQuoted(Quoted):
 
     def __repr__(self) -> str:
         return f"SingleQuoted({self.value[1:-1]})"
-    
+
     def accept(self, visitor):
         return visitor.visit_single_quoted(self)
 
@@ -84,7 +97,7 @@ class BackQuoted(Quoted):
 
     def __str__(self) -> str:
         return f"BackQuoted({self.value[1:-1]})"
-    
+
     def __repr__(self) -> str:
         return f"BackQuoted({self.value[1:-1]})"
 
@@ -117,6 +130,7 @@ class Pipe(Application):
     def __str__(self) -> str:
         return "Pipe({left}, {right})".format(left=self.left, right=self.right)
 
+
 class Seq(Application):
     def __init__(self, left, right):
         self.left = left
@@ -124,7 +138,7 @@ class Seq(Application):
 
     def accept(self, visitor):
         return visitor.visit_seq(self)
-    
+
     def __str__(self) -> str:
         return "Seq({left}, {right})".format(left=self.left, right=self.right)
 
@@ -136,7 +150,6 @@ class echo(Application):
 
 class ls(Application):
     def run(self, arguments: [str] = []) -> None:
-
         if len(arguments) == 0:
             ls_dir = os.getcwd()
         elif len(arguments) > 1:
@@ -154,7 +167,6 @@ class ls(Application):
 
 
 class cd(Application):
-    
     def run(self, arguments: [str] = []) -> None:
         if len(arguments) == 0 or len(arguments) > 1:
             raise ValueError("wrong number of command line arguments")
@@ -162,7 +174,7 @@ class cd(Application):
             os.chdir(arguments[0])
         except FileNotFoundError:
             raise ValueError(f"directory {arguments[0]} does not exist")
-            
+
         return ""
 
 
@@ -180,6 +192,8 @@ class cat(Application):
                     out += f.read()
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
+            except IsADirectoryError:
+                out += f"{file} is not a directory"
         return out
 
 
@@ -254,6 +268,7 @@ class grep(Application):
                         out += line
         return out
 
+
 class uniq(Application):
     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
         lines = stdin if stdin else []
@@ -271,7 +286,7 @@ class uniq(Application):
                 out.append(line)
             prev_line = line
         return "".join(out)
-          
+
 
 class sort(Application):
     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
@@ -284,6 +299,7 @@ class sort(Application):
                 except FileNotFoundError:
                     raise ValueError(f"file {filename} does not exist")
         return out
+
 
 class cut(Application):
     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
@@ -305,6 +321,7 @@ class cut(Application):
                 out.append(fields[field - 1])
         return out
 
+
 class find(Application):
     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
         if len(arguments) != 2:
@@ -315,7 +332,8 @@ class find(Application):
             for filename in fnmatch.filter(filenames, pattern):
                 matches.append(os.path.join(root, filename))
         return matches
-    
+
+
 APPLICATIONS = {
     "pwd": pwd,
     "cd": cd,
