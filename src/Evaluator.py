@@ -27,13 +27,14 @@ class Evaluator(Visitor):
     def visit_call(self, call):
         app = call.application
         arguments = []
-
         for arg in call.arguments:
-            if not isinstance(arg, str):
+            if isinstance(arg, Pattern):
+                for x in arg.accept(self).split():
+                    arguments.append(x) 
+            elif not isinstance(arg, str) and not isinstance(arg, io.StringIO):
                 arguments.append(arg.accept(self))
             else:
                 arguments.append(arg)
-
         if not isinstance(app, str):
             app = app.accept(self)
         if app in APPLICATIONS.keys():
