@@ -21,7 +21,7 @@ class Redirection(Application):
         return visitor.visit_redirection(self)
 
     def __str__(self) -> str:
-        return f"Redirection( {self.call_arr}, {self.arrow}, {self.io_file})"
+        return f"Redirection( {self.call_object}, {self.arrow}, {self.io_file})"
 
 
 class Pattern:
@@ -105,6 +105,16 @@ class BackQuoted(Quoted):
         return visitor.visit_back_quoted(self)
 
 
+class Argument:
+    def __init__(self, argument_list: [str]) -> None:
+        self.argument_list = argument_list
+
+    def __str__(self) -> str:
+        return f"Argument({self.argument_list})"
+
+    def accept(self, visitor):
+        return visitor.visit_argument(self)
+
 class Call(Application):
     def __init__(self, arguments: [str]) -> None:
         self.application = arguments[0]
@@ -163,7 +173,7 @@ class ls(Application):
                     out += f + "\n"
             return out
         except FileNotFoundError:
-            raise ValueError(f"directory {ls_dir} does not exist")
+            raise FileNotFoundError(f"directory {ls_dir} does not exist")
 
 
 class cd(Application):

@@ -28,6 +28,9 @@ class Evaluator(Visitor):
         app = call.application
         arguments = []
         for arg in call.arguments:
+            if not isinstance(arg, str) and not isinstance(arg, io.StringIO):
+                arg = arg.accept(self)
+        for arg in call.arguments:
             if isinstance(arg, Pattern):
                 for x in arg.accept(self).split():
                     arguments.append(x) 
@@ -35,16 +38,21 @@ class Evaluator(Visitor):
                 arguments.append(arg.accept(self))
             else:
                 arguments.append(arg)
+
         if not isinstance(app, str):
             app = app.accept(self)
         if app in APPLICATIONS.keys():
             return APPLICATIONS[app]().run(arguments)
         else:
             return " ".join([app] + arguments)
+    
+    def visit_argument(self, argument):
+        return "".join([element.accept(self) if (type(element) != str and type(element) != io.StringIO) else element for element in argument.argument_list])
+
     def visit_redirection(self, redirection):
         arrow = redirection.arrow
         call_object = redirection.call_object
-        io_file = redirection.io_file
+        io_file = redirection.io_file.accept(self)
         if arrow == ">":
             stdout = call_object.accept(self)
             with open(io_file, 'w') as file:
@@ -57,17 +65,27 @@ class Evaluator(Visitor):
                 raise(f"file {io_file} not found")
             call_object.arguments.append(io_file)  
             return call_object.accept(self)
-            
-
-        return
+        return ""
 
     def visit_seq(self, seq):
         left = seq.left
         right = seq.right
         if not self.backtick_root:
-            return f"{left.accept(self)}\n{right.accept(self)}"
+            try:
+                accepted_left = left.accept(self)
+                accepted_right = right.accept(self)
+                return f"{accepted_left}\n{accepted_right}"
+                # return f"{left.accept(self)}\n{right.accept(self)}"
+            except:
+                return f""
         else:
-            return f"{left.accept(self)} {right.accept(self)}"
+            try:
+                accepted_left = left.accept(self)
+                accepted_right = right.accept(self)
+                return f"{left.accept(self)} {right.accept(self)}"
+                # return f"{left.accept(self)} {right.accept(self)}"
+            except:
+                return f""
 
 #echo `echo hello` worldwrodl `echo`
 # ['echo ', '`echo hello`', ' worldwrodl ', `echo`]
