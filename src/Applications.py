@@ -187,13 +187,14 @@ class cat(Application):
     def run(self, arguments: [str] = []) -> str:
         out = ""
         for file in arguments:
-            try:
-                with open(file) as f:
-                    out += f.read()
-            except FileNotFoundError:
-                raise ValueError(f"file {file} does not exist")
-            except IsADirectoryError:
-                out += f"{file} is not a directory"
+            if not isinstance(file, io.StringIO):
+                try:
+                    file = open(file)
+                except FileNotFoundError:
+                    raise ValueError(f"file {file} does not exist")
+                except IsADirectoryError:
+                    out += f"{file} is not a directory"
+            out+=file.read()    
         return out
 
 
