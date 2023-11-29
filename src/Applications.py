@@ -5,11 +5,9 @@ import io
 from os import listdir
 from typing import Any
 
-
 class Application:
     def run(self, arguments: str, out: deque) -> None:
         return None
-
 
 class Redirection(Application):
     def __init__(self, call_object, arrow, io_file) -> None:

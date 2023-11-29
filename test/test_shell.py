@@ -4,11 +4,6 @@ from shell import eval
 from Applications import *
 from Visitor import *
 from Antlr.ShellGrammarVisitor import ShellGrammarVisitor
-# def eval(cmdline):
-#     try :
-#         return evaluate(convert(cmdline))
-#     except ValueError as e:
-#         return str(e)
 
 class TestShell(unittest.TestCase):
     def test_ls(self):
