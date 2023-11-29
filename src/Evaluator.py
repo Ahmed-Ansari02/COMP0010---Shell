@@ -52,10 +52,11 @@ class Evaluator(Visitor):
         elif arrow == "<":
             try:
                 with open(io_file,'r') as file:
-                    pass 
+                    file_content = file.read()
             except FileNotFoundError:
                 raise(f"file {io_file} not found")
-            call_object.arguments.append(io_file)  
+            stdin = io.StringIO(file_content)
+            call_object.arguments.append(stdin)  
             return call_object.accept(self)
             
 
