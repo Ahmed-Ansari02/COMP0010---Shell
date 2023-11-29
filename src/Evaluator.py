@@ -28,9 +28,11 @@ class Evaluator(Visitor):
 
         app = call.application
         arguments = []
+
         for arg in call.arguments:
             if not isinstance(arg, str) and not isinstance(arg, io.StringIO):
                 arg = arg.accept(self)
+
         for arg in call.arguments:
             if isinstance(arg, Pattern):
                 for x in arg.accept(self).split():
@@ -39,6 +41,7 @@ class Evaluator(Visitor):
                 arguments.append(arg.accept(self))
             else:
                 arguments.append(arg)
+
 
         if not isinstance(app, str):
             app = app.accept(self)

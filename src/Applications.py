@@ -63,7 +63,7 @@ class Quoted:
         self.value = value
 
     def __str__(self) -> str:
-        return f"Quoted{self.value[1:-1]}"
+        return f"Quoted({self.value[1:-1]})"
 
     def accept(self, visitor):
         return None
@@ -328,37 +328,37 @@ class sort(Application):
         return out
 
 
-# class cut(Application):
-#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-#         if len(arguments) != 2 or arguments[0] != "-f":
-#             raise ValueError("wrong number of command line arguments or flags")
-#         field = int(arguments[1])
-#         lines = stdin if stdin else []
-#         if len(arguments) > 2:
-#             file = arguments[2]
-#             try:
-#                 with open(file) as f:
-#                     lines = f.readlines()
-#             except FileNotFoundError:
-#                 raise ValueError(f"file {file} does not exist")
-#         out = []
-#         for line in lines:
-#             fields = line.split()
-#             if field <= len(fields):
-#                 out.append(fields[field - 1])
-#         return out
+class cut(Application):
+    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+        if len(arguments) != 2 or arguments[0] != "-f":
+            raise ValueError("wrong number of command line arguments or flags")
+        field = int(arguments[1])
+        lines = stdin if stdin else []
+        if len(arguments) > 2:
+            file = arguments[2]
+            try:
+                with open(file) as f:
+                    lines = f.readlines()
+            except FileNotFoundError:
+                raise ValueError(f"file {file} does not exist")
+        out = []
+        for line in lines:
+            fields = line.split()
+            if field <= len(fields):
+                out.append(fields[field - 1])
+        return out
 
 
-# class find(Application):
-#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-#         if len(arguments) != 2:
-#             raise ValueError("wrong number of command line arguments")
-#         path, pattern = arguments
-#         matches = []
-#         for root, dirnames, filenames in os.walk(path):
-#             for filename in fnmatch.filter(filenames, pattern):
-#                 matches.append(os.path.join(root, filename))
-#         return matches
+class find(Application):
+    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+        if len(arguments) != 2:
+            raise ValueError("wrong number of command line arguments")
+        path, pattern = arguments
+        matches = []
+        for root, dirnames, filenames in os.walk(path):
+            for filename in fnmatch.filter(filenames, pattern):
+                matches.append(os.path.join(root, filename))
+        return matches
 
 
 APPLICATIONS = {
@@ -369,9 +369,9 @@ APPLICATIONS = {
     "cat": cat,
     "head": head,
     "tail": tail,
-    "grep": grep
-    # "uniq": uniq,
-    # "sort": sort,
-    # "cut": cut,
-    # "find": find,
+    "grep": grep,
+    "uniq": uniq,
+    "sort": sort,
+    "cut": cut,
+    "find": find,
 }
