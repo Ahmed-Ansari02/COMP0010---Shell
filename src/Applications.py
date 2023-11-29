@@ -58,6 +58,17 @@ class Pattern:
         return visitor.visit_pattern(self)
 
 
+class Options:
+    def __init__(self, options: str) -> None:
+        self.options = [x for x in options]
+
+    def __str__(self) -> str:
+        return f"Options({self.options})"
+
+    def accept(self, visitor):
+        return visitor.visit_options(self)
+
+
 class Quoted:
     def __init__(self, value: str):
         self.value = value
@@ -329,24 +340,64 @@ class sort(Application):
 
 
 class cut(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        if len(arguments) != 2 or arguments[0] != "-f":
+    def byte_range(self, bytes, lines) -> str:
+        search_bytes = []
+        for byte in bytes:
+            if "-" not in byte and isinstance(int(byte), int):
+                if int(byte) >= len(lines):
+                    raise ValueError("Index out of bounds")
+                if int(byte) - 1 not in search_bytes:
+                    search_bytes.append(int(byte) - 1)
+            elif (len(byte) == 3) and (
+                isinstance(int(byte[0]), int)
+                and byte[1] == "-"
+                and isinstance(int(byte[2]), int)
+                and int(byte[0]) < int(byte[2])
+            ):
+                if int(byte[2]) > len(lines):
+                    raise ValueError("Index out of bounds")
+                for i in range(int(byte[0]) - 1, int(byte[2])):
+                    if i not in search_bytes:
+                        search_bytes.append(i)
+
+            elif (len(byte) == 2) and byte[0] == "-" and isinstance(int(byte[1]), int):
+                if int(byte[1]) > len(lines):
+                    raise ValueError("Index out of bounds")
+                for i in range(0, int(byte[1])):
+                    if i not in search_bytes:
+                        search_bytes.append(i)
+
+            elif (len(byte) == 2) and isinstance(int(byte[0]), int) and byte[1] == "-":
+                if int(byte[0]) > len(lines):
+                    raise ValueError("Index out of bounds")
+                for i in range(int(byte[0]) - 1, len(lines)):
+                    if i not in search_bytes:
+                        search_bytes.append(i)
+            else:
+                raise ValueError("Incorrect format for byte range")
+        return search_bytes
+
+    def run(self, arguments: [str] = []) -> None:
+        if len(arguments) != 3 or arguments[0] != "-b":
             raise ValueError("wrong number of command line arguments or flags")
-        field = int(arguments[1])
-        lines = stdin if stdin else []
-        if len(arguments) > 2:
+        option = arguments[0]
+        out = ""
+        if option == "-b":
+            bytes = arguments[1].split(",")
             file = arguments[2]
-            try:
-                with open(file) as f:
-                    lines = f.readlines()
-            except FileNotFoundError:
-                raise ValueError(f"file {file} does not exist")
-        out = []
-        for line in lines:
-            fields = line.split()
-            if field <= len(fields):
-                out.append(fields[field - 1])
-        return out
+            if not isinstance(file, io.StringIO):
+                try:
+                    file = open(file)
+                except FileNotFoundError:
+                    raise ValueError(f"file {file} does not exist")
+            lines = file.readlines()
+            for line in lines:
+                line = line.replace("\n", "")
+                search_bytes = self.byte_range(bytes, line)
+                for i in search_bytes:
+                    out += line[i]
+                out += "\n"
+            return out
 
 
 class find(Application):

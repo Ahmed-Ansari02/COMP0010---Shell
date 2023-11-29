@@ -5,8 +5,8 @@ from Antlr.ShellGrammarVisitor import ShellGrammarVisitor
 from Applications import *
 from antlr4 import *
 
-class Converter(ShellGrammarVisitor):
 
+class Converter(ShellGrammarVisitor):
     def __init__(self):
         super().__init__()
 
@@ -19,14 +19,14 @@ class Converter(ShellGrammarVisitor):
             return None
         else:
             return Seq(self.visit(ctx.command(0)), self.visit(ctx.command(1)))
-            
-    def visitPipe(self, ctx:ShellGrammarParser.PipeContext):
+
+    def visitPipe(self, ctx: ShellGrammarParser.PipeContext):
         if ctx.pipe():
             return Pipe(left=self.visit(ctx.pipe()), right=self.visit(ctx.call(0)))
         return Pipe(left=self.visit(ctx.call(0)), right=self.visit(ctx.call(1)))
-    
-    def visitCall(self, ctx:ShellGrammarParser.CallContext):
-        call_arr=[]
+
+    def visitCall(self, ctx: ShellGrammarParser.CallContext):
+        call_arr = []
         redirection_arr = []
         arguments = ctx.argument()
 
@@ -36,7 +36,7 @@ class Converter(ShellGrammarVisitor):
         # Takes care of redirection. Separate from arguments.
         if ctx.redirection():
             redirections = ctx.redirection()
-            if len(redirections)>1:
+            if len(redirections) > 1:
                 raise ValueError("Only one redirection may be used")
             for i in redirections:
                 redirection_arr.append(i.getText()[0])
@@ -60,12 +60,10 @@ class Converter(ShellGrammarVisitor):
                     argument_arr.append(element.getText())
             return Argument(argument_arr)
 
-    def visitQuoted(self, ctx:ShellGrammarParser.QuotedContext):
+    def visitQuoted(self, ctx: ShellGrammarParser.QuotedContext):
         if ctx.SINGLE_QUOTED():
             return SingleQuoted(ctx.getText())
         elif ctx.DOUBLE_QUOTED():
             return DoubleQuoted(ctx.getText())
         elif ctx.BACK_QUOTED():
             return BackQuoted(ctx.getText())
-
-

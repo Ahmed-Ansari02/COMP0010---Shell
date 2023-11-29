@@ -109,6 +109,6 @@ class Evaluator(Visitor):
         stdin = io.StringIO(left_result)
         pipe.right.arguments.append(stdin)
         return pipe.right.accept(self)          
-    
+        
     def visit_pattern(self, pattern):
         return ' '.join(pattern.files)
