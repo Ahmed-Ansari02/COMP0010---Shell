@@ -1,12 +1,28 @@
-class Visitor:
+class Visitor():
+
     def visit_call(self, call):
-        pass
+        return None
+    
+    def visit_argument(self, argument):
+        return None
+
+    def visit_redirection(self, redirection):
+        return None
 
     def visit_seq(self, seq):
-        pass
+        return None
 
-    def visit_quoted(self, quoted):
-        pass
+    def visit_single_quoted(self, quoted):
+        return None
+
+    def visit_double_quoted(self, quoted):
+        return None
+
+    def visit_back_quoted(self, backquoted):
+        return None
 
     def visit_pipe(self, pipe):
-        pass
+        return None    
+    
+    def visit_pattern(self, pattern):
+        return None

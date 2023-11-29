@@ -32,6 +32,7 @@ def convert(cmdline:str):
     parser = ShellGrammarParser(stream)
     tree = parser.command()
     command = tree.accept(Converter())
+    # print(command)
     return command
 
 def evaluate(e):
@@ -39,9 +40,9 @@ def evaluate(e):
 
 def eval(cmd_str: str):  # function to call eval() and incorporate error handling
     try:
-        print(evaluate(convert(cmd_str)))
+        return evaluate(convert(cmd_str))
     except ValueError as e:
-        print(e)
+        return str(e)
 
 def check_args(args_num, args):  # function to check command line arguments and incorporate error handling
     if args_num != 2:
@@ -54,11 +55,11 @@ if __name__ == "__main__":
     if args_num > 0:
         try:
             check_args(args_num, sys.argv)
-            eval(sys.argv[2])
+            print(eval(sys.argv[2]))
         except ValueError as e:
             print(e)
     else:
         while True:
             print(os.getcwd() + "> ", end="")
             cmdline = input()
-            eval(cmdline)
+            print(eval(cmdline))

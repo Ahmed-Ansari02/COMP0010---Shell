@@ -25,8 +25,14 @@ class Evaluator(Visitor):
         super().__init__()
     
     def visit_call(self, call):
+
         app = call.application
         arguments = []
+
+        for arg in call.arguments:
+            if not isinstance(arg, str) and not isinstance(arg, io.StringIO):
+                arg = arg.accept(self)
+
         for arg in call.arguments:
             if isinstance(arg, Pattern):
                 for x in arg.accept(self).split():
@@ -35,16 +41,23 @@ class Evaluator(Visitor):
                 arguments.append(arg.accept(self))
             else:
                 arguments.append(arg)
+
+
         if not isinstance(app, str):
             app = app.accept(self)
         if app in APPLICATIONS.keys():
             return APPLICATIONS[app]().run(arguments)
         else:
             return " ".join([app] + arguments)
+    
+    def visit_argument(self, argument):
+        to_return = "".join([element.accept(self) if (type(element) != str and type(element) != io.StringIO) else element for element in argument.argument_list])
+        return to_return
+
     def visit_redirection(self, redirection):
         arrow = redirection.arrow
         call_object = redirection.call_object
-        io_file = redirection.io_file
+        io_file = redirection.io_file.accept(self)
         if arrow == ">":
             stdout = call_object.accept(self)
             with open(io_file, 'w') as file:
@@ -58,18 +71,27 @@ class Evaluator(Visitor):
             stdin = io.StringIO(file_content)
             call_object.arguments.append(stdin)  
             return call_object.accept(self)
-            
-
-        return
+        return ""
 
     def visit_seq(self, seq):
         left = seq.left
         right = seq.right
         if not self.backtick_root:
-            return f"{left.accept(self)}\n{right.accept(self)}"
+            try:
+                accepted_left = left.accept(self)
+                accepted_right = right.accept(self)
+                return f"{accepted_left}\n{accepted_right}"
+                # return f"{left.accept(self)}\n{right.accept(self)}"
+            except:
+                return f""
         else:
-            return f"{left.accept(self)} {right.accept(self)}"
-
+            try:
+                accepted_left = left.accept(self)
+                accepted_right = right.accept(self)
+                return f"{left.accept(self)} {right.accept(self)}"
+                # return f"{left.accept(self)} {right.accept(self)}"
+            except:
+                return f""
 
     def visit_single_quoted(self, quoted):
         return quoted.value[1:-1]
@@ -84,7 +106,6 @@ class Evaluator(Visitor):
 
     def visit_pipe(self, pipe):
         left_result = pipe.left.accept(self)
-
         stdin = io.StringIO(left_result)
         pipe.right.arguments.append(stdin)
         return pipe.right.accept(self)          

@@ -5,11 +5,9 @@ import io
 from os import listdir
 from typing import Any
 
-
 class Application:
     def run(self, arguments: str, out: deque) -> None:
-        pass
-
+        return None
 
 class Redirection(Application):
     def __init__(self, call_object, arrow, io_file) -> None:
@@ -21,7 +19,10 @@ class Redirection(Application):
         return visitor.visit_redirection(self)
 
     def __str__(self) -> str:
-        return f"Redirection( {self.call_arr}, {self.arrow}, {self.io_file})"
+        return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
+    
+    def __repr__(self) -> str:
+        return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
 
 
 class Pattern:
@@ -46,7 +47,10 @@ class Pattern:
             raise ValueError(f"directory {dir} does not exist")
 
     def __str__(self) -> str:
-        return f"Pattern({self.files})"
+        return f"Pattern({self.pattern})"
+    
+    def __repr__(self) -> str:
+        return f"Pattern({self.pattern})"
 
     def accept(self, visitor):
         return visitor.visit_pattern(self)
@@ -68,10 +72,10 @@ class Quoted:
         self.value = value
 
     def __str__(self) -> str:
-        return self.value[1:-1]
+        return f"Quoted({self.value[1:-1]})"
 
     def accept(self, visitor):
-        pass
+        return None
 
 
 class DoubleQuoted(Quoted):
@@ -115,6 +119,19 @@ class BackQuoted(Quoted):
     def accept(self, visitor):
         return visitor.visit_back_quoted(self)
 
+
+class Argument:
+    def __init__(self, argument_list: [str]) -> None:
+        self.argument_list = argument_list
+
+    def __str__(self) -> str:
+        return f"Argument({self.argument_list})"
+    
+    def __repr__(self) -> str:
+        return f"Argument({self.argument_list})"
+
+    def accept(self, visitor):
+        return visitor.visit_argument(self)
 
 class Call(Application):
     def __init__(self, arguments: [str]) -> None:
@@ -174,7 +191,7 @@ class ls(Application):
                     out += f + "\n"
             return out
         except FileNotFoundError:
-            raise ValueError(f"directory {ls_dir} does not exist")
+            raise FileNotFoundError(f"directory {ls_dir} does not exist")
 
 
 class cd(Application):
