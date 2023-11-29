@@ -211,15 +211,17 @@ class head(Application):
             else:
                 num_lines = int(arguments[1])
                 file = arguments[2]
-        try:
-            out = ""
-            with open(file) as f:
-                lines = f.readlines()
-                for i in range(0, min(len(lines), num_lines)):
-                    out += lines[i]
-            return out
-        except FileNotFoundError:
-            raise ValueError(f"file {file} does not exist")
+        out = ""
+        if not isinstance(file, io.StringIO):
+            try:
+                file = open(file)
+
+            except FileNotFoundError:
+                raise ValueError(f"file {file} does not exist")
+        lines = file.readlines()
+        for i in range(0, min(len(lines), num_lines)):
+            out += lines[i]
+        return out
 
 
 class tail(Application):
@@ -235,16 +237,17 @@ class tail(Application):
             else:
                 num_lines = int(arguments[1])
                 file = arguments[2]
-        try:
-            out = ""
-            with open(file) as f:
-                lines = f.readlines()
-                display_length = min(len(lines), num_lines)
-                for i in range(0, display_length):
-                    out += lines[len(lines) - display_length + i]
-            return out
-        except FileNotFoundError:
-            raise ValueError(f"file {file} does not exist")
+        out = ""
+        if not isinstance(file, io.StringIO):
+            try:      
+                file = open(file)
+            except FileNotFoundError:
+                raise ValueError(f"file {file} does not exist")
+        lines = file.readlines()
+        display_length = min(len(lines), num_lines)
+        for i in range(0, display_length):
+            out += lines[len(lines) - display_length + i]
+        return out
 
 
 class grep(Application):
@@ -275,11 +278,13 @@ class uniq(Application):
         lines = stdin if stdin else []
         if arguments:
             filename = arguments[0]
-            try:
-                with open(filename) as f:
-                    lines = f.readlines()
-            except FileNotFoundError:
-                raise ValueError(f"file {filename} does not exist")
+            if not isinstance(filename, io.StringIO):
+                try:
+                    filename = open(filename)
+                except FileNotFoundError:
+                    raise ValueError(f"file {filename} does not exist")
+            lines = filename.readlines()
+        
         out = []
         prev_line = None
         for line in lines:
@@ -294,11 +299,13 @@ class sort(Application):
         out = stdin if stdin else ""
         if arguments:
             for filename in arguments:
-                try:
-                    with open(filename) as f:
-                        out += "".join(sorted(f.readlines()))
-                except FileNotFoundError:
-                    raise ValueError(f"file {filename} does not exist")
+                if not isinstance(filename, io.StringIO):
+                    try:
+                        filename =  open(filename)
+
+                    except FileNotFoundError:
+                        raise ValueError(f"file {filename} does not exist")
+            out += "".join(sorted(filename.readlines()))
         return out
 
 
