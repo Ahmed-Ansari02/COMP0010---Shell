@@ -2,6 +2,7 @@ from collections import deque
 import os
 import re
 import io
+import fnmatch
 from os import listdir
 from typing import Any
 
@@ -302,9 +303,11 @@ class grep(Application):
 
 
 class uniq(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        lines = stdin if stdin else []
+    def run(self, arguments: [str] = []) -> None:
+        option = None
         if arguments:
+            if "-i" == arguments[0]:                
+                option = arguments.pop(0)
             filename = arguments[0]
             if not isinstance(filename, io.StringIO):
                 try:
@@ -312,20 +315,29 @@ class uniq(Application):
                 except FileNotFoundError:
                     raise ValueError(f"file {filename} does not exist")
             lines = filename.readlines()
-        
         out = []
         prev_line = None
         for line in lines:
             if line != prev_line:
-                out.append(line)
+                if option:
+                    line = line.upper()
+                    if line in out:
+                        pass
+                    else:
+                        out.append(line)
+                else:
+                    out.append(line)
             prev_line = line
         return "".join(out)
 
 
 class sort(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        out = stdin if stdin else ""
+    def run(self, arguments: [str] = []) -> None:
+        option = None
+        out = ""
         if arguments:
+            if arguments[0] == "-r":
+                option = arguments.pop(0)
             for filename in arguments:
                 if not isinstance(filename, io.StringIO):
                     try:
@@ -333,7 +345,10 @@ class sort(Application):
 
                     except FileNotFoundError:
                         raise ValueError(f"file {filename} does not exist")
-            out += "".join(sorted(filename.readlines()))
+            if option:
+                out += "".join(sorted(filename.readlines(),reverse=True))
+            else:
+                out += "".join(sorted(filename.readlines()))
         return out
 
 
@@ -399,15 +414,27 @@ class cut(Application):
 
 
 class find(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        if len(arguments) != 2:
-            raise ValueError("wrong number of command line arguments")
-        path, pattern = arguments
-        matches = []
-        for root, dirnames, filenames in os.walk(path):
-            for filename in fnmatch.filter(filenames, pattern):
-                matches.append(os.path.join(root, filename))
-        return matches
+    def run(self, arguments: [str] = []) -> None:
+        out = ""
+        if arguments[0] == "-name":
+            start_path = '.'
+            pattern = arguments[1]
+        else:
+            start_path = arguments[0]
+            pattern = arguments[2]
+        
+        
+        # List to store the paths of matched files
+        matched_files = []
+
+        # Walk through the directory tree
+        for root, dirs, files in os.walk(start_path):
+            for filename in fnmatch.filter(files, pattern):
+                # Construct the full path and add it to the list
+                full_path = os.path.join(root, filename)
+                matched_files.append(full_path)
+        out+="\n".join(matched_files)
+        return out
 
 
 APPLICATIONS = {
