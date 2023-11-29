@@ -39,23 +39,26 @@ class Converter(ShellGrammarVisitor):
             if len(redirections)>1:
                 raise ValueError("Only one redirection may be used")
             for i in redirections:
-                
                 redirection_arr.append(i.getText()[0])
                 redirection_arr.append(self.visit(i.argument()))
             return Redirection(Call(call_arr),redirection_arr[0],redirection_arr[1])
         
         return Call(call_arr)
 
+    def visitRedirection(self, ctx: ShellGrammarParser.RedirectionContext):
+        return super().visitRedirection(ctx)
+    
     def visitArgument(self, ctx:ShellGrammarParser.ArgumentContext):
         argument_arr = []
-        for element in ctx.getChildren():
-            if type(element) == ShellGrammarParser.QuotedContext:
-                argument_arr.append(self.visit(element))
-            elif "*" in element.getText() or "?" in element.getText() or "[" in element.getText():
-                argument_arr.append(Pattern(element.getText()))
-            else:
-                argument_arr.append(element.getText())
-        return Argument(argument_arr)
+        if ctx.quoted() or ctx.UNQUOTED():
+            for element in ctx.getChildren():
+                if type(element) == ShellGrammarParser.QuotedContext:
+                    argument_arr.append(self.visit(element))
+                elif "*" in element.getText() or "?" in element.getText() or "[" in element.getText():
+                    argument_arr.append(Pattern(element.getText()))
+                else:
+                    argument_arr.append(element.getText())
+            return Argument(argument_arr)
 
     def visitQuoted(self, ctx:ShellGrammarParser.QuotedContext):
         if ctx.SINGLE_QUOTED():

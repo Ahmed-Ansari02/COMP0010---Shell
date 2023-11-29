@@ -8,7 +8,7 @@ from typing import Any
 
 class Application:
     def run(self, arguments: str, out: deque) -> None:
-        pass
+        return None
 
 
 class Redirection(Application):
@@ -21,7 +21,10 @@ class Redirection(Application):
         return visitor.visit_redirection(self)
 
     def __str__(self) -> str:
-        return f"Redirection( {self.call_object}, {self.arrow}, {self.io_file})"
+        return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
+    
+    def __repr__(self) -> str:
+        return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
 
 
 class Pattern:
@@ -46,7 +49,10 @@ class Pattern:
             raise ValueError(f"directory {dir} does not exist")
 
     def __str__(self) -> str:
-        return f"Pattern({self.files})"
+        return f"Pattern({self.pattern})"
+    
+    def __repr__(self) -> str:
+        return f"Pattern({self.pattern})"
 
     def accept(self, visitor):
         return visitor.visit_pattern(self)
@@ -57,10 +63,10 @@ class Quoted:
         self.value = value
 
     def __str__(self) -> str:
-        return self.value[1:-1]
+        return f"Quoted{self.value[1:-1]}"
 
     def accept(self, visitor):
-        pass
+        return None
 
 
 class DoubleQuoted(Quoted):
@@ -110,6 +116,9 @@ class Argument:
         self.argument_list = argument_list
 
     def __str__(self) -> str:
+        return f"Argument({self.argument_list})"
+    
+    def __repr__(self) -> str:
         return f"Argument({self.argument_list})"
 
     def accept(self, visitor):
@@ -279,69 +288,69 @@ class grep(Application):
         return out
 
 
-class uniq(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        lines = stdin if stdin else []
-        if arguments:
-            filename = arguments[0]
-            try:
-                with open(filename) as f:
-                    lines = f.readlines()
-            except FileNotFoundError:
-                raise ValueError(f"file {filename} does not exist")
-        out = []
-        prev_line = None
-        for line in lines:
-            if line != prev_line:
-                out.append(line)
-            prev_line = line
-        return "".join(out)
+# class uniq(Application):
+#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+#         lines = stdin if stdin else []
+#         if arguments:
+#             filename = arguments[0]
+#             try:
+#                 with open(filename) as f:
+#                     lines = f.readlines()
+#             except FileNotFoundError:
+#                 raise ValueError(f"file {filename} does not exist")
+#         out = []
+#         prev_line = None
+#         for line in lines:
+#             if line != prev_line:
+#                 out.append(line)
+#             prev_line = line
+#         return "".join(out)
 
 
-class sort(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        out = stdin if stdin else ""
-        if arguments:
-            for filename in arguments:
-                try:
-                    with open(filename) as f:
-                        out += "".join(sorted(f.readlines()))
-                except FileNotFoundError:
-                    raise ValueError(f"file {filename} does not exist")
-        return out
+# class sort(Application):
+#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+#         out = stdin if stdin else ""
+#         if arguments:
+#             for filename in arguments:
+#                 try:
+#                     with open(filename) as f:
+#                         out += "".join(sorted(f.readlines()))
+#                 except FileNotFoundError:
+#                     raise ValueError(f"file {filename} does not exist")
+#         return out
 
 
-class cut(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        if len(arguments) != 2 or arguments[0] != "-f":
-            raise ValueError("wrong number of command line arguments or flags")
-        field = int(arguments[1])
-        lines = stdin if stdin else []
-        if len(arguments) > 2:
-            file = arguments[2]
-            try:
-                with open(file) as f:
-                    lines = f.readlines()
-            except FileNotFoundError:
-                raise ValueError(f"file {file} does not exist")
-        out = []
-        for line in lines:
-            fields = line.split()
-            if field <= len(fields):
-                out.append(fields[field - 1])
-        return out
+# class cut(Application):
+#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+#         if len(arguments) != 2 or arguments[0] != "-f":
+#             raise ValueError("wrong number of command line arguments or flags")
+#         field = int(arguments[1])
+#         lines = stdin if stdin else []
+#         if len(arguments) > 2:
+#             file = arguments[2]
+#             try:
+#                 with open(file) as f:
+#                     lines = f.readlines()
+#             except FileNotFoundError:
+#                 raise ValueError(f"file {file} does not exist")
+#         out = []
+#         for line in lines:
+#             fields = line.split()
+#             if field <= len(fields):
+#                 out.append(fields[field - 1])
+#         return out
 
 
-class find(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        if len(arguments) != 2:
-            raise ValueError("wrong number of command line arguments")
-        path, pattern = arguments
-        matches = []
-        for root, dirnames, filenames in os.walk(path):
-            for filename in fnmatch.filter(filenames, pattern):
-                matches.append(os.path.join(root, filename))
-        return matches
+# class find(Application):
+#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+#         if len(arguments) != 2:
+#             raise ValueError("wrong number of command line arguments")
+#         path, pattern = arguments
+#         matches = []
+#         for root, dirnames, filenames in os.walk(path):
+#             for filename in fnmatch.filter(filenames, pattern):
+#                 matches.append(os.path.join(root, filename))
+#         return matches
 
 
 APPLICATIONS = {
@@ -352,9 +361,9 @@ APPLICATIONS = {
     "cat": cat,
     "head": head,
     "tail": tail,
-    "grep": grep,
-    "uniq": uniq,
-    "sort": sort,
-    "cut": cut,
-    "find": find,
+    "grep": grep
+    # "uniq": uniq,
+    # "sort": sort,
+    # "cut": cut,
+    # "find": find,
 }

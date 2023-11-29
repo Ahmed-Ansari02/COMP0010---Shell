@@ -10,39 +10,38 @@ else:
 class ShellGrammarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by ShellGrammarParser#s.
-    def visitS(self, ctx:ShellGrammarParser.SContext):
-        return self.visitChildren(ctx)
+    # def visitS(self, ctx:ShellGrammarParser.SContext):
+    #     return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by ShellGrammarParser#command.
     def visitCommand(self, ctx:ShellGrammarParser.CommandContext):
-        return self.visitChildren(ctx)
+        return None
 
 
     # Visit a parse tree produced by ShellGrammarParser#redirection.
     def visitRedirection(self, ctx:ShellGrammarParser.RedirectionContext):
-        return self.visitChildren(ctx)
+        return None
 
 
     # Visit a parse tree produced by ShellGrammarParser#pipe.
     def visitPipe(self, ctx:ShellGrammarParser.PipeContext):
-        return self.visitChildren(ctx)
+        return None
 
 
     # Visit a parse tree produced by ShellGrammarParser#call.
     def visitCall(self, ctx:ShellGrammarParser.CallContext):
-        return self.visitChildren(ctx)
+        return None
 
 
     # Visit a parse tree produced by ShellGrammarParser#argument.
     def visitArgument(self, ctx:ShellGrammarParser.ArgumentContext):
-        return self.visitChildren(ctx)
+        return None
 
 
     # Visit a parse tree produced by ShellGrammarParser#quoted.
     def visitQuoted(self, ctx:ShellGrammarParser.QuotedContext):
-        return self.visitChildren(ctx)
-
+        return None
 
 
 del ShellGrammarParser
