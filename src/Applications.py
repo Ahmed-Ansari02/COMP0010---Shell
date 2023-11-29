@@ -56,15 +56,15 @@ class Pattern:
         return visitor.visit_pattern(self)
 
 
-class Options:
-    def __init__(self, options: str) -> None:
-        self.options = [x for x in options]
+# class Options:
+#     def __init__(self, options: str) -> None:
+#         self.options = [x for x in options]
 
-    def __str__(self) -> str:
-        return f"Options({self.options})"
+#     def __str__(self) -> str:
+#         return f"Options({self.options})"
 
-    def accept(self, visitor):
-        return visitor.visit_options(self)
+#     def accept(self, visitor):
+#         return visitor.visit_options(self)
 
 
 class Quoted:
@@ -301,113 +301,113 @@ class grep(Application):
         return out
 
 
-class uniq(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        lines = stdin if stdin else []
-        if arguments:
-            filename = arguments[0]
-            if not isinstance(filename, io.StringIO):
-                try:
-                    filename = open(filename)
-                except FileNotFoundError:
-                    raise ValueError(f"file {filename} does not exist")
-            lines = filename.readlines()
+# class uniq(Application):
+#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+#         lines = stdin if stdin else []
+#         if arguments:
+#             filename = arguments[0]
+#             if not isinstance(filename, io.StringIO):
+#                 try:
+#                     filename = open(filename)
+#                 except FileNotFoundError:
+#                     raise ValueError(f"file {filename} does not exist")
+#             lines = filename.readlines()
         
-        out = []
-        prev_line = None
-        for line in lines:
-            if line != prev_line:
-                out.append(line)
-            prev_line = line
-        return "".join(out)
+#         out = []
+#         prev_line = None
+#         for line in lines:
+#             if line != prev_line:
+#                 out.append(line)
+#             prev_line = line
+#         return "".join(out)
 
 
-class sort(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        out = stdin if stdin else ""
-        if arguments:
-            for filename in arguments:
-                if not isinstance(filename, io.StringIO):
-                    try:
-                        filename =  open(filename)
+# class sort(Application):
+#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+#         out = stdin if stdin else ""
+#         if arguments:
+#             for filename in arguments:
+#                 if not isinstance(filename, io.StringIO):
+#                     try:
+#                         filename =  open(filename)
 
-                    except FileNotFoundError:
-                        raise ValueError(f"file {filename} does not exist")
-            out += "".join(sorted(filename.readlines()))
-        return out
-
-
-class cut(Application):
-    def byte_range(self, bytes, lines) -> str:
-        search_bytes = []
-        for byte in bytes:
-            if "-" not in byte and isinstance(int(byte), int):
-                if int(byte) >= len(lines):
-                    raise ValueError("Index out of bounds")
-                if int(byte) - 1 not in search_bytes:
-                    search_bytes.append(int(byte) - 1)
-            elif (len(byte) == 3) and (
-                isinstance(int(byte[0]), int)
-                and byte[1] == "-"
-                and isinstance(int(byte[2]), int)
-                and int(byte[0]) < int(byte[2])
-            ):
-                if int(byte[2]) > len(lines):
-                    raise ValueError("Index out of bounds")
-                for i in range(int(byte[0]) - 1, int(byte[2])):
-                    if i not in search_bytes:
-                        search_bytes.append(i)
-
-            elif (len(byte) == 2) and byte[0] == "-" and isinstance(int(byte[1]), int):
-                if int(byte[1]) > len(lines):
-                    raise ValueError("Index out of bounds")
-                for i in range(0, int(byte[1])):
-                    if i not in search_bytes:
-                        search_bytes.append(i)
-
-            elif (len(byte) == 2) and isinstance(int(byte[0]), int) and byte[1] == "-":
-                if int(byte[0]) > len(lines):
-                    raise ValueError("Index out of bounds")
-                for i in range(int(byte[0]) - 1, len(lines)):
-                    if i not in search_bytes:
-                        search_bytes.append(i)
-            else:
-                raise ValueError("Incorrect format for byte range")
-        return search_bytes
-
-    def run(self, arguments: [str] = []) -> None:
-        if len(arguments) != 3 or arguments[0] != "-b":
-            raise ValueError("wrong number of command line arguments or flags")
-        option = arguments[0]
-        out = ""
-        if option == "-b":
-            bytes = arguments[1].split(",")
-            file = arguments[2]
-            if not isinstance(file, io.StringIO):
-                try:
-                    file = open(file)
-                except FileNotFoundError:
-                    raise ValueError(f"file {file} does not exist")
-            lines = file.readlines()
-            for line in lines:
-                line = line.replace("\n", "")
-                search_bytes = self.byte_range(bytes, line)
-                for i in search_bytes:
-                    out += line[i]
-                out += "\n"
-            return out
+#                     except FileNotFoundError:
+#                         raise ValueError(f"file {filename} does not exist")
+#             out += "".join(sorted(filename.readlines()))
+#         return out
 
 
-class find(Application):
-    def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
-        if len(arguments) != 2:
-            raise ValueError("wrong number of command line arguments")
-        path, pattern = arguments
-        matches = []
-        for root, dirnames, filenames in os.walk(path):
-            for filename in fnmatch.filter(filenames, pattern):
-                matches.append(os.path.join(root, filename))
-        return matches
+# class cut(Application):
+#     def byte_range(self, bytes, lines) -> str:
+#         search_bytes = []
+#         for byte in bytes:
+#             if "-" not in byte and isinstance(int(byte), int):
+#                 if int(byte) >= len(lines):
+#                     raise ValueError("Index out of bounds")
+#                 if int(byte) - 1 not in search_bytes:
+#                     search_bytes.append(int(byte) - 1)
+#             elif (len(byte) == 3) and (
+#                 isinstance(int(byte[0]), int)
+#                 and byte[1] == "-"
+#                 and isinstance(int(byte[2]), int)
+#                 and int(byte[0]) < int(byte[2])
+#             ):
+#                 if int(byte[2]) > len(lines):
+#                     raise ValueError("Index out of bounds")
+#                 for i in range(int(byte[0]) - 1, int(byte[2])):
+#                     if i not in search_bytes:
+#                         search_bytes.append(i)
+
+#             elif (len(byte) == 2) and byte[0] == "-" and isinstance(int(byte[1]), int):
+#                 if int(byte[1]) > len(lines):
+#                     raise ValueError("Index out of bounds")
+#                 for i in range(0, int(byte[1])):
+#                     if i not in search_bytes:
+#                         search_bytes.append(i)
+
+#             elif (len(byte) == 2) and isinstance(int(byte[0]), int) and byte[1] == "-":
+#                 if int(byte[0]) > len(lines):
+#                     raise ValueError("Index out of bounds")
+#                 for i in range(int(byte[0]) - 1, len(lines)):
+#                     if i not in search_bytes:
+#                         search_bytes.append(i)
+#             else:
+#                 raise ValueError("Incorrect format for byte range")
+#         return search_bytes
+
+#     def run(self, arguments: [str] = []) -> None:
+#         if len(arguments) != 3 or arguments[0] != "-b":
+#             raise ValueError("wrong number of command line arguments or flags")
+#         option = arguments[0]
+#         out = ""
+#         if option == "-b":
+#             bytes = arguments[1].split(",")
+#             file = arguments[2]
+#             if not isinstance(file, io.StringIO):
+#                 try:
+#                     file = open(file)
+#                 except FileNotFoundError:
+#                     raise ValueError(f"file {file} does not exist")
+#             lines = file.readlines()
+#             for line in lines:
+#                 line = line.replace("\n", "")
+#                 search_bytes = self.byte_range(bytes, line)
+#                 for i in search_bytes:
+#                     out += line[i]
+#                 out += "\n"
+#             return out
+
+
+# class find(Application):
+#     def run(self, arguments: [str] = [], stdin: [str] = []) -> None:
+#         if len(arguments) != 2:
+#             raise ValueError("wrong number of command line arguments")
+#         path, pattern = arguments
+#         matches = []
+#         for root, dirnames, filenames in os.walk(path):
+#             for filename in fnmatch.filter(filenames, pattern):
+#                 matches.append(os.path.join(root, filename))
+#         return matches
 
 
 APPLICATIONS = {
@@ -419,8 +419,8 @@ APPLICATIONS = {
     "head": head,
     "tail": tail,
     "grep": grep,
-    "uniq": uniq,
-    "sort": sort,
-    "cut": cut,
-    "find": find,
+    # "uniq": uniq,
+    # "sort": sort,
+    # "cut": cut,
+    # "find": find,
 }

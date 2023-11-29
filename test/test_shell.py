@@ -13,6 +13,9 @@ class TestShell(unittest.TestCase):
     def test_ls_wrong_args(self):
         output = eval("ls a b")
         self.assertEqual(output, "wrong number of command line arguments")
+    def ls_dir_not_found(self):
+        output = eval("ls thisisntadir")
+        self.assertEqual(output, "directory thisisntadir does not exist")
     def test_ls_one_arg(self):
         output = eval("ls test")
         self.assertEqual(output, "test_shell.py\n__pycache__\n")
@@ -119,21 +122,42 @@ class TestShell(unittest.TestCase):
     def test_to_string_pipe(self):
         object_to_string = str(Pipe(Call([Argument(['cat']), Argument(['test.txt'])]), Call([Argument(['grep']), Argument(['.'])])))
         self.assertEqual(object_to_string, "Pipe(Call(Argument(['cat']), [Argument(['test.txt'])]), Call(Argument(['grep']), [Argument(['.'])]))")
+    
     def test_to_string_redirection(self):
         object_to_string = str(Redirection(Call([Argument(['echo']), Argument(['foo'])]), '>', Argument(['newfile.txt'])))
         self.assertEqual(object_to_string, "Redirection(Call(Argument(['echo']), [Argument(['foo'])]), >, Argument(['newfile.txt']))")
+    def test_repr_redirection(self):
+        object_to_string = repr(Redirection(Call([Argument(['echo']), Argument(['foo'])]), '>', Argument(['newfile.txt'])))
+        self.assertEqual(object_to_string, "Redirection(Call(Argument(['echo']), [Argument(['foo'])]), >, Argument(['newfile.txt']))")
+
     def test_to_string_pattern(self):
         object_to_string = str(Pattern('*.txt'))
         self.assertEqual(object_to_string, "Pattern(.*.txt)")
+    def test_repr_pattern(self):
+        object_to_string = repr(Pattern('*.txt'))
+        self.assertEqual(object_to_string, "Pattern(.*.txt)")
+
     def test_to_string_single_quoted(self):
         object_to_string = str(SingleQuoted("'hello'"))
         self.assertEqual(object_to_string, "SingleQuoted(hello)")
+    def test_repr_single_quoted(self):
+        object_to_string = repr(SingleQuoted("'hello'"))
+        self.assertEqual(object_to_string, "SingleQuoted(hello)")
+
     def test_to_string_double_quoted(self):
         object_to_string = str(DoubleQuoted('"hello"'))
         self.assertEqual(object_to_string, 'DoubleQuoted(hello)')
+    def test_repr_double_quoted(self):
+        object_to_string = repr(DoubleQuoted('"hello"'))
+        self.assertEqual(object_to_string, 'DoubleQuoted(hello)')
+    
     def test_to_string_back_quoted(self):
         object_to_string = str(BackQuoted("`echo hello`"))
         self.assertEqual(object_to_string, "BackQuoted(echo hello)")
+    def test_repr_back_quoted(self):
+        object_to_string = repr(BackQuoted("`echo hello`"))
+        self.assertEqual(object_to_string, "BackQuoted(echo hello)")
+
     def test_to_string_quoted(self):
         object_to_string = str(Quoted("'hello'"))
         self.assertEqual(object_to_string, "Quoted(hello)")
