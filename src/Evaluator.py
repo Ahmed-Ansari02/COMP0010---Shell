@@ -70,9 +70,7 @@ class Evaluator(Visitor):
         else:
             return f"{left.accept(self)} {right.accept(self)}"
 
-#echo `echo hello` worldwrodl `echo`
-# ['echo ', '`echo hello`', ' worldwrodl ', `echo`]
-#  echo hello
+
     def visit_single_quoted(self, quoted):
         return quoted.value[1:-1]
     
@@ -90,7 +88,6 @@ class Evaluator(Visitor):
         stdin = io.StringIO(left_result)
         pipe.right.arguments.append(stdin)
         return pipe.right.accept(self)          
-    
+        
     def visit_pattern(self, pattern):
-        # print(pattern.files)
         return ' '.join(pattern.files)
