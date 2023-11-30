@@ -345,10 +345,14 @@ class sort(Application):
 
                     except FileNotFoundError:
                         raise ValueError(f"file {filename} does not exist")
+            lines = filename.readlines()
+            for i in range(len(lines)):
+                if not '\n' in lines[i]:
+                    lines[i] += '\n'
             if option:
-                out += "".join(sorted(filename.readlines(),reverse=True))
+                out += "".join(sorted(lines,reverse=True))
             else:
-                out += "".join(sorted(filename.readlines()))
+                out += "".join(sorted(lines))
         return out
 
 
