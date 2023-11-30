@@ -226,7 +226,7 @@ class TestShell(unittest.TestCase):
         result = stdout.strip().split("\n")
         self.assertEqual(result, ["AAA", "BBB", "AAA", "CCC"])
 
-    def tsortest_(self):
+    def test_sort(self):
         cmdline = "sort dir1/file1.txt"
         stdout = self.eval(cmdline)
         result = stdout.strip().split("\n")
