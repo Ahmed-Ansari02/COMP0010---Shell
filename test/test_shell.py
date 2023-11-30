@@ -52,6 +52,43 @@ class TestShell(unittest.TestCase):
     def test_grep(self):
         output = eval("grep 'fla..' requirements.txt")
         self.assertEqual(output, "flake8==3.8.0\nflake8-html\n")
+    def test_uniq(self):
+        output = eval("uniq test.txt")
+        arguments = ["\" hel lo\"", 'abc', '\'hello\'', " AAA ", 'test2.txt']
+        self.assertEqual(output.split("\n"), arguments)
+        
+    def test_sort(self):
+        output = eval("sort test.txt")
+        arguments = [" AAA ", "\" hel lo\"", '\'hello\'', 'abc', 'test2.txt']
+        self.assertEqual(output.split("\n"), arguments)
+        # self.assertEqual(output, " AAA \n\" hel lo\"\n'hello'\nabc\ntest2.txt")
+    def test_sort_reverse(self):
+        output = eval("sort -r test.txt")
+        arguments = ['test2.txt', 'abc', '\'hello\'', "\" hel lo\"", " AAA "]
+        self.assertEqual(output.split("\n"), arguments)
+    def test_find(self):
+        output = eval("find -name \'*.txt\'")
+        self.assertEqual(output, "./requirements.txt\n./test2.txt\n./testfile.txt\n./test.txt")
+
+    def test_cut(self):
+        output = eval("cut -b 1 test.txt")
+        self.assertEqual(output.split("\n"), ["\"", "a", "\'", " ", "t", ''])
+    def test_cut_overlapping(self):
+        output = eval("cut -b 1-3,2 test.txt")
+        self.assertEqual(output.split("\n"), ["\" h", "abc", "\'he", " AA", "tes", ''])
+    def test_cut_wrong_line(self):
+        output = eval("cut -b 1-5 test.txt")
+        self.assertEqual(output, "Index out of bounds")
+    def test_cut_incorrect_options(self):
+        output = eval("cut -b 5-1 test.txt")
+        self.assertEqual(output, "Incorrect format for byte range")
+    def test_cut_pre_interval(self):
+        output = eval("cut -b 2- test.txt")
+        self.assertEqual(output.split("\n"), [" hel lo\"", "bc", "hello\'", "AAA ", "est2.txt", ''])
+
+    def test_cut_post_interval(self):
+        output = eval("cut -b -2 test.txt")
+        self.assertEqual(output.split("\n"), ["\" ", "ab", "\'h", " A", "te", ''])
 
     def test_single_quoted(self):
         output = eval("echo 'hello'")

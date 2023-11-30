@@ -342,75 +342,81 @@ class sort(Application):
                 if not isinstance(filename, io.StringIO):
                     try:
                         filename =  open(filename)
-
                     except FileNotFoundError:
                         raise ValueError(f"file {filename} does not exist")
+            lines = filename.readlines()
+            for line in lines:
+                if line[-1] != '\n':
+                    line += '\n'
             if option:
-                out += "".join(sorted(filename.readlines(),reverse=True))
+                print('normal', lines)
+                print('sorted', sorted(lines))
+                print('reversed', sorted(lines,reverse=True))
+                out += "".join(sorted(lines,reverse=True))
             else:
-                out += "".join(sorted(filename.readlines()))
+                out += "".join(sorted(lines))
         return out
 
 
-# class cut(Application):
-#     def byte_range(self, bytes, lines) -> str:
-#         search_bytes = []
-#         for byte in bytes:
-#             if "-" not in byte and isinstance(int(byte), int):
-#                 if int(byte) >= len(lines):
-#                     raise ValueError("Index out of bounds")
-#                 if int(byte) - 1 not in search_bytes:
-#                     search_bytes.append(int(byte) - 1)
-#             elif (len(byte) == 3) and (
-#                 isinstance(int(byte[0]), int)
-#                 and byte[1] == "-"
-#                 and isinstance(int(byte[2]), int)
-#                 and int(byte[0]) < int(byte[2])
-#             ):
-#                 if int(byte[2]) > len(lines):
-#                     raise ValueError("Index out of bounds")
-#                 for i in range(int(byte[0]) - 1, int(byte[2])):
-#                     if i not in search_bytes:
-#                         search_bytes.append(i)
+class cut(Application):
+    def byte_range(self, bytes, lines) -> str:
+        search_bytes = []
+        for byte in bytes:
+            if "-" not in byte and isinstance(int(byte), int):
+                if int(byte) >= len(lines):
+                    raise ValueError("Index out of bounds")
+                if int(byte) - 1 not in search_bytes:
+                    search_bytes.append(int(byte) - 1)
+            elif (len(byte) == 3) and (
+                isinstance(int(byte[0]), int)
+                and byte[1] == "-"
+                and isinstance(int(byte[2]), int)
+                and int(byte[0]) < int(byte[2])
+            ):
+                if int(byte[2]) > len(lines):
+                    raise ValueError("Index out of bounds")
+                for i in range(int(byte[0]) - 1, int(byte[2])):
+                    if i not in search_bytes:
+                        search_bytes.append(i)
 
-#             elif (len(byte) == 2) and byte[0] == "-" and isinstance(int(byte[1]), int):
-#                 if int(byte[1]) > len(lines):
-#                     raise ValueError("Index out of bounds")
-#                 for i in range(0, int(byte[1])):
-#                     if i not in search_bytes:
-#                         search_bytes.append(i)
+            elif (len(byte) == 2) and byte[0] == "-" and isinstance(int(byte[1]), int):
+                if int(byte[1]) > len(lines):
+                    raise ValueError("Index out of bounds")
+                for i in range(0, int(byte[1])):
+                    if i not in search_bytes:
+                        search_bytes.append(i)
 
-#             elif (len(byte) == 2) and isinstance(int(byte[0]), int) and byte[1] == "-":
-#                 if int(byte[0]) > len(lines):
-#                     raise ValueError("Index out of bounds")
-#                 for i in range(int(byte[0]) - 1, len(lines)):
-#                     if i not in search_bytes:
-#                         search_bytes.append(i)
-#             else:
-#                 raise ValueError("Incorrect format for byte range")
-#         return search_bytes
+            elif (len(byte) == 2) and isinstance(int(byte[0]), int) and byte[1] == "-":
+                if int(byte[0]) > len(lines):
+                    raise ValueError("Index out of bounds")
+                for i in range(int(byte[0]) - 1, len(lines)):
+                    if i not in search_bytes:
+                        search_bytes.append(i)
+            else:
+                raise ValueError("Incorrect format for byte range")
+        return search_bytes
 
-#     def run(self, arguments: [str] = []) -> None:
-#         if len(arguments) != 3 or arguments[0] != "-b":
-#             raise ValueError("wrong number of command line arguments or flags")
-#         option = arguments[0]
-#         out = ""
-#         if option == "-b":
-#             bytes = arguments[1].split(",")
-#             file = arguments[2]
-#             if not isinstance(file, io.StringIO):
-#                 try:
-#                     file = open(file)
-#                 except FileNotFoundError:
-#                     raise ValueError(f"file {file} does not exist")
-#             lines = file.readlines()
-#             for line in lines:
-#                 line = line.replace("\n", "")
-#                 search_bytes = self.byte_range(bytes, line)
-#                 for i in search_bytes:
-#                     out += line[i]
-#                 out += "\n"
-#             return out
+    def run(self, arguments: [str] = []) -> None:
+        if len(arguments) != 3 or arguments[0] != "-b":
+            raise ValueError("wrong number of command line arguments or flags")
+        option = arguments[0]
+        out = ""
+        if option == "-b":
+            bytes = arguments[1].split(",")
+            file = arguments[2]
+            if not isinstance(file, io.StringIO):
+                try:
+                    file = open(file)
+                except FileNotFoundError:
+                    raise ValueError(f"file {file} does not exist")
+            lines = file.readlines()
+            for line in lines:
+                line = line.replace("\n", "")
+                search_bytes = self.byte_range(bytes, line)
+                for i in search_bytes:
+                    out += line[i]
+                out += "\n"
+            return out
 
 
 class find(Application):
@@ -446,8 +452,8 @@ APPLICATIONS = {
     "head": head,
     "tail": tail,
     "grep": grep,
-    # "uniq": uniq,
-    # "sort": sort,
-    # "cut": cut,
-    # "find": find,
+    "uniq": uniq,
+    "sort": sort,
+    "cut": cut,
+    "find": find,
 }

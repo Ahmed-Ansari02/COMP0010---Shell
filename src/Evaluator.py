@@ -5,6 +5,7 @@ from Antlr.ShellGrammarLexer import ShellGrammarLexer
 from Antlr.ShellGrammarParser import ShellGrammarParser
 from Converter import Converter
 import io
+
 def convert(cmdline:str):
     input_stream = InputStream(cmdline)
     lexer = ShellGrammarLexer(input_stream)
@@ -106,10 +107,13 @@ class Evaluator(Visitor):
         return evaluate(convert((backquoted.value[1:-1])))
 
     def visit_pipe(self, pipe):
-        left_result = pipe.left.accept(self)
-        stdin = io.StringIO(left_result)
-        pipe.right.arguments.append(stdin)
-        return pipe.right.accept(self)          
-        
+        try:
+            left_result = pipe.left.accept(self)
+            stdin = io.StringIO(left_result)
+            pipe.right.arguments.append(stdin)
+            return pipe.right.accept(self)          
+        except:
+            return ""
+
     def visit_pattern(self, pattern):
         return ' '.join(pattern.files)

@@ -18,6 +18,8 @@ class Converter(ShellGrammarVisitor):
         elif ctx.getChildCount() == 0:
             return None
         else:
+            if not ctx.command(0) or not ctx.command(1): 
+                return "Missing command"
             return Seq(self.visit(ctx.command(0)), self.visit(ctx.command(1)))
 
     def visitPipe(self, ctx: ShellGrammarParser.PipeContext):
