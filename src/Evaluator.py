@@ -28,6 +28,7 @@ class Evaluator(Visitor):
 
         app = call.application
         arguments = []
+    
 
         for arg in call.arguments:
             if not isinstance(arg, str) and not isinstance(arg, io.StringIO):
