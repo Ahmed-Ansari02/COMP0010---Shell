@@ -29,17 +29,16 @@ class Evaluator(Visitor):
 
         app = call.application
         arguments = []
-    
 
         for arg in call.arguments:
             if not isinstance(arg, str) and not isinstance(arg, io.StringIO):
                 arg = arg.accept(self)
 
         for arg in call.arguments:
-            if isinstance(arg, Pattern):
-                for x in arg.accept(self).split():
-                    arguments.append(x) 
-            elif not isinstance(arg, str) and not isinstance(arg, io.StringIO):
+            # if isinstance(arg, Pattern):
+            #     for x in arg.accept(self).split():
+            #         arguments.append(x) 
+            if not isinstance(arg, str) and not isinstance(arg, io.StringIO):
                 arguments.append(arg.accept(self))
             else:
                 arguments.append(arg)
@@ -69,7 +68,7 @@ class Evaluator(Visitor):
                 with open(io_file,'r') as file:
                     file_content = file.read()
             except FileNotFoundError:
-                raise(f"file {io_file} not found")
+                return FileNotFoundError(f"file {io_file} not found")
             stdin = io.StringIO(file_content)
             call_object.arguments.append(stdin)  
             return call_object.accept(self)

@@ -28,6 +28,9 @@ class TestShell(unittest.TestCase):
     def test_cd(self):
         output = eval("cd comp0010")
         self.assertEqual(os.getcwd(), "/comp0010")
+    def test_cd_wrong_args(self):
+        output = eval("cd")
+        self.assertEqual(output, "wrong number of command line arguments")
     def test_pwd(self):
         output = eval("pwd")
         self.assertEqual(output, "/comp0010\n")
@@ -49,6 +52,18 @@ class TestShell(unittest.TestCase):
     def test_tail(self):
         output = eval("tail -n 2 requirements.txt")
         self.assertEqual(output, "antlr4-python3-runtime==4.13.1\nantlr4-tools==0.2\n")
+    def test_tail_wrong_flag(self):
+        output = eval("tail -a 2 requirements.txt")
+        self.assertEqual(output, "wrong flags")
+    def test_tail_wrong_args(self):
+        output = eval("tail -n 2 requirements.txt test.txt")
+        self.assertEqual(output, "wrong number of command line arguments")
+    def test_tail_one_arg(self):
+        output = eval("tail test.txt")
+        expected = ""
+        with open('test.txt') as f:
+            expected += f.read()
+        self.assertEqual(output, f"{expected}")
     def test_grep(self):
         output = eval("grep 'fla..' requirements.txt")
         self.assertEqual(output, "flake8==3.8.0\nflake8-html\n")
@@ -59,12 +74,12 @@ class TestShell(unittest.TestCase):
         
     def test_sort(self):
         output = eval("sort test.txt")
-        arguments = [" AAA ", "\" hel lo\"", '\'hello\'', 'abc', 'test2.txt']
+        arguments = [" AAA ", "\" hel lo\"", '\'hello\'', 'abc', 'test2.txt', '']
         self.assertEqual(output.split("\n"), arguments)
         # self.assertEqual(output, " AAA \n\" hel lo\"\n'hello'\nabc\ntest2.txt")
     def test_sort_reverse(self):
         output = eval("sort -r test.txt")
-        arguments = ['test2.txt', 'abc', '\'hello\'', "\" hel lo\"", " AAA "]
+        arguments = ['test2.txt', 'abc', '\'hello\'', "\" hel lo\"", " AAA ", '']
         self.assertEqual(output.split("\n"), arguments)
     def test_find(self):
         output = eval("find -name \'*.txt\'")
@@ -119,17 +134,26 @@ class TestShell(unittest.TestCase):
         with open('test.txt') as f:
             out += f.read()
         self.assertEqual(output, f"{out}")
+    def test_input_redirection_wrong_file(self):
+        output = eval("cat < nonexistent.txt")
+        self.assertEqual(str(output), str("file nonexistent.txt not found"))
     def test_pipe(self):
         output = eval("cat test.txt | grep abc")
         self.assertEqual(output, "abc\n")
     def test_multiple_pipe(self):
         output = eval("cat test.txt | grep \" *\" | grep abc")
         self.assertEqual(output, "abc\n")
+    def test_pipe_with_error(self):
+        output = eval("cat doesnotexist.txt | grep abc")
+        self.assertEqual(output, "")
     def test_sequence(self):
         output = eval("echo foo ; echo bar")
         self.assertEqual(output, "foo\nbar")
     def test_sequence_with_error(self):
         output = eval("grep 'abc' notadirectory ; echo hi ")
+        self.assertEqual(output, "")
+    def test_sequence_substitution_with_error(self):
+        output = eval("`cat notadirectory.txt` ; echo hi ")
         self.assertEqual(output, "")
     def test_multiple_sequence(self):
         output = eval("echo foo ; echo bar ; echo great")
