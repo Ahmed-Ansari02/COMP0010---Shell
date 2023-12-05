@@ -6,9 +6,11 @@ import fnmatch
 from os import listdir
 from typing import Any
 
+
 class Application:
     def run(self, arguments: str, out: deque) -> None:
         return None
+
 
 class Redirection(Application):
     def __init__(self, call_object, arrow, io_file) -> None:
@@ -21,7 +23,7 @@ class Redirection(Application):
 
     def __str__(self) -> str:
         return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
-    
+
     def __repr__(self) -> str:
         return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
 
@@ -49,7 +51,7 @@ class Pattern:
 
     def __str__(self) -> str:
         return f"Pattern({self.pattern})"
-    
+
     def __repr__(self) -> str:
         return f"Pattern({self.pattern})"
 
@@ -126,16 +128,20 @@ class Argument:
         self.argument_list = argument_list
 
     def __str__(self) -> str:
-        return f"Argument({self.argument_list})"
-    
+        return f"{self.argument_list}"
+
     def __repr__(self) -> str:
         return f"Argument({self.argument_list})"
 
     def accept(self, visitor):
         return visitor.visit_argument(self)
 
+    def get_arg_list(self):
+        return self.argument_list
+
+
 class Call(Application):
-    def __init__(self, arguments: [str]) -> None:
+    def __init__(self, arguments: [Argument]) -> None:
         self.application = arguments[0]
         self.arguments = arguments[1:]
 
@@ -223,7 +229,7 @@ class cat(Application):
                     raise ValueError(f"file {file} does not exist")
                 except IsADirectoryError:
                     out += f"{file} is not a directory"
-            out+=file.read()    
+            out += file.read()
         return out
 
 
@@ -268,7 +274,7 @@ class tail(Application):
                 file = arguments[2]
         out = ""
         if not isinstance(file, io.StringIO):
-            try:      
+            try:
                 file = open(file)
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
@@ -306,7 +312,7 @@ class uniq(Application):
     def run(self, arguments: [str] = []) -> None:
         option = None
         if arguments:
-            if "-i" == arguments[0]:                
+            if "-i" == arguments[0]:
                 option = arguments.pop(0)
             filename = arguments[0]
             if not isinstance(filename, io.StringIO):
@@ -341,12 +347,12 @@ class sort(Application):
             for filename in arguments:
                 if not isinstance(filename, io.StringIO):
                     try:
-                        filename =  open(filename)
+                        filename = open(filename)
 
                     except FileNotFoundError:
                         raise ValueError(f"file {filename} does not exist")
             if option:
-                out += "".join(sorted(filename.readlines(),reverse=True))
+                out += "".join(sorted(filename.readlines(), reverse=True))
             else:
                 out += "".join(sorted(filename.readlines()))
         return out
@@ -417,13 +423,12 @@ class find(Application):
     def run(self, arguments: [str] = []) -> None:
         out = ""
         if arguments[0] == "-name":
-            start_path = '.'
+            start_path = "."
             pattern = arguments[1]
         else:
             start_path = arguments[0]
             pattern = arguments[2]
-        
-        
+
         # List to store the paths of matched files
         matched_files = []
 
@@ -433,7 +438,7 @@ class find(Application):
                 # Construct the full path and add it to the list
                 full_path = os.path.join(root, filename)
                 matched_files.append(full_path)
-        out+="\n".join(matched_files)
+        out += "\n".join(matched_files)
         return out
 
 
