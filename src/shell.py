@@ -16,17 +16,14 @@ def convert(cmdline: str):
     parser = ShellGrammarParser(stream)
     tree = parser.command()
     command = tree.accept(Converter())
-    # print(command)
+
     return command
 
 
 def evaluate(e):
-    return e.accept(Evaluator())  # Visitor for the application
-
-
-def eval(cmd_str: str):
-
-    # function to call eval() and incorporate error handling
+    if e is None:
+        return ""
+    return e.accept(Evaluator())  #Visitor for the application
 
     try:
         return evaluate(convert(cmd_str))

@@ -45,10 +45,18 @@ class Evaluator(Visitor):
                 arguments.append(arg)
         if not isinstance(app, str):
             app = app.accept(self)
-        if app in APPLICATIONS.keys():
-            return APPLICATIONS[app]().run(arguments)
+        
+        if app in APPLICATIONS.keys() or app[1:] in APPLICATIONS.keys():
+            if app[0] == "_":
+                try:
+                    return APPLICATIONS[app[1:]]().run(arguments)
+                except Exception as e:
+                    return str(e)
+            else:
+                return APPLICATIONS[app]().run(arguments)                
         else:
-            return " ".join([app] + arguments)
+            raise ValueError(f"{app} is an unknown command")
+    
 
     def visit_argument(self, argument):
         to_return = "".join(

@@ -6,6 +6,7 @@ import fnmatch
 from os import listdir
 
 
+
 class Application:
     def run(self, arguments: str, out: deque) -> None:
         return None
@@ -129,15 +130,16 @@ class Argument:
     def __str__(self) -> str:
         return f"Argument({self.argument_list})"
 
+
     def __repr__(self) -> str:
         return f"Argument({self.argument_list})"
 
     def accept(self, visitor):
         return visitor.visit_argument(self)
-
+      
 
 class Call(Application):
-    def __init__(self, arguments: [str]) -> None:
+    def __init__(self, arguments: [Argument]) -> None:
         self.application = arguments[0]
         self.arguments = arguments[1:]
 
@@ -425,11 +427,12 @@ class find(Application):
     def run(self, arguments: [str] = []) -> None:
         out = ""
         if arguments[0] == "-name":
-            start_path = '.'
+            start_path = "."
             pattern = arguments[1]
         else:
             start_path = arguments[0]
             pattern = arguments[2]
+
         # List to store the paths of matched files
         matched_files = []
 
