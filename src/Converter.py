@@ -1,16 +1,15 @@
-import sys
-from Antlr.ShellGrammarLexer import ShellGrammarLexer
 from Antlr.ShellGrammarParser import ShellGrammarParser
 from Antlr.ShellGrammarVisitor import ShellGrammarVisitor
-from Applications import *
-from antlr4 import *
+from Applications import (
+    Seq, Pipe, Redirection, Call, Argument,
+    SingleQuoted, DoubleQuoted, BackQuoted, Pattern)
 
 
 class Converter(ShellGrammarVisitor):
     def __init__(self):
         super().__init__()
 
-    def visitCommand(self, ctx:ShellGrammarParser.CommandContext):
+    def visitCommand(self, ctx: ShellGrammarParser.CommandContext):
         if ctx.call():
             return self.visit(ctx.call())
         elif ctx.pipe():
@@ -22,8 +21,12 @@ class Converter(ShellGrammarVisitor):
 
     def visitPipe(self, ctx: ShellGrammarParser.PipeContext):
         if ctx.pipe():
-            return Pipe(left=self.visit(ctx.pipe()), right=self.visit(ctx.call(0)))
-        return Pipe(left=self.visit(ctx.call(0)), right=self.visit(ctx.call(1)))
+            return Pipe(
+                left=self.visit(ctx.pipe()),
+                right=self.visit(ctx.call(0)))
+        return Pipe(
+            left=self.visit(ctx.call(0)),
+            right=self.visit(ctx.call(1)))
 
     def visitCall(self, ctx: ShellGrammarParser.CallContext):
         call_arr = []
@@ -41,20 +44,26 @@ class Converter(ShellGrammarVisitor):
             for i in redirections:
                 redirection_arr.append(i.getText()[0])
                 redirection_arr.append(self.visit(i.argument()))
-            return Redirection(Call(call_arr),redirection_arr[0],redirection_arr[1])
-        
+            return Redirection(
+                Call(call_arr),
+                redirection_arr[0],
+                redirection_arr[1])
+
         return Call(call_arr)
 
     def visitRedirection(self, ctx: ShellGrammarParser.RedirectionContext):
         return super().visitRedirection(ctx)
-    
-    def visitArgument(self, ctx:ShellGrammarParser.ArgumentContext):
+
+    def visitArgument(self, ctx: ShellGrammarParser.ArgumentContext):
         argument_arr = []
         if ctx.quoted() or ctx.UNQUOTED():
             for element in ctx.getChildren():
                 if type(element) == ShellGrammarParser.QuotedContext:
                     argument_arr.append(self.visit(element))
-                elif "*" in element.getText() or "?" in element.getText() or "[" in element.getText():
+                elif (
+                        "*" in element.getText() or
+                        "?" in element.getText() or
+                        "[" in element.getText()):
                     argument_arr.append(Pattern(element.getText()))
                 else:
                     argument_arr.append(element.getText())
