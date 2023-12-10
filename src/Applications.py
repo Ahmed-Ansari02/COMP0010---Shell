@@ -4,11 +4,12 @@ import re
 import io
 import fnmatch
 from os import listdir
-from typing import Any
+
 
 class Application:
     def run(self, arguments: str, out: deque) -> None:
         return None
+
 
 class Redirection(Application):
     def __init__(self, call_object, arrow, io_file) -> None:
@@ -21,7 +22,7 @@ class Redirection(Application):
 
     def __str__(self) -> str:
         return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
-    
+
     def __repr__(self) -> str:
         return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
 
@@ -33,11 +34,11 @@ class Pattern:
         self.pattern = pattern.replace("*", ".*").replace("?", ".")
         dir = re.search(r"(.*)/", self.pattern)
         dir_path = ""
-        if dir == None:
+        if dir is None:
             dir = os.getcwd()
         else:
             dir = dir.group(1)
-            self.pattern = self.pattern[len(dir) + 1 :]
+            self.pattern = self.pattern[len(dir) + 1:]
             dir_path = dir + "/"
         try:
             files_in_dir = listdir(dir)
@@ -49,7 +50,7 @@ class Pattern:
 
     def __str__(self) -> str:
         return f"Pattern({self.pattern})"
-    
+
     def __repr__(self) -> str:
         return f"Pattern({self.pattern})"
 
@@ -127,12 +128,13 @@ class Argument:
 
     def __str__(self) -> str:
         return f"Argument({self.argument_list})"
-    
+
     def __repr__(self) -> str:
         return f"Argument({self.argument_list})"
 
     def accept(self, visitor):
         return visitor.visit_argument(self)
+
 
 class Call(Application):
     def __init__(self, arguments: [str]) -> None:
@@ -223,7 +225,7 @@ class cat(Application):
                     raise ValueError(f"file {file} does not exist")
                 except IsADirectoryError:
                     out += f"{file} is not a directory"
-            out+=file.read()    
+            out += file.read()
         return out
 
 
@@ -268,7 +270,7 @@ class tail(Application):
                 file = arguments[2]
         out = ""
         if not isinstance(file, io.StringIO):
-            try:      
+            try:
                 file = open(file)
             except FileNotFoundError:
                 raise ValueError(f"file {file} does not exist")
@@ -306,7 +308,7 @@ class uniq(Application):
     def run(self, arguments: [str] = []) -> None:
         option = None
         if arguments:
-            if "-i" == arguments[0]:                
+            if "-i" == arguments[0]:
                 option = arguments.pop(0)
             filename = arguments[0]
             if not isinstance(filename, io.StringIO):
@@ -341,16 +343,16 @@ class sort(Application):
             for filename in arguments:
                 if not isinstance(filename, io.StringIO):
                     try:
-                        filename =  open(filename)
+                        filename = open(filename)
 
                     except FileNotFoundError:
                         raise ValueError(f"file {filename} does not exist")
             lines = filename.readlines()
             for i in range(len(lines)):
-                if not '\n' in lines[i]:
+                if '\n' not in lines[i]:
                     lines[i] += '\n'
             if option:
-                out += "".join(sorted(lines,reverse=True))
+                out += "".join(sorted(lines, reverse=True))
             else:
                 out += "".join(sorted(lines))
         return out
@@ -377,14 +379,16 @@ class cut(Application):
                     if i not in search_bytes:
                         search_bytes.append(i)
 
-            elif (len(byte) == 2) and byte[0] == "-" and isinstance(int(byte[1]), int):
+            elif (len(byte) == 2) and (
+                    byte[0] == "-" and isinstance(int(byte[1]), int)):
                 if int(byte[1]) > len(lines):
                     raise ValueError("Index out of bounds")
                 for i in range(0, int(byte[1])):
                     if i not in search_bytes:
                         search_bytes.append(i)
 
-            elif (len(byte) == 2) and isinstance(int(byte[0]), int) and byte[1] == "-":
+            elif (len(byte) == 2) and (
+                    isinstance(int(byte[0]), int) and byte[1] == "-"):
                 if int(byte[0]) > len(lines):
                     raise ValueError("Index out of bounds")
                 for i in range(int(byte[0]) - 1, len(lines)):
@@ -426,8 +430,6 @@ class find(Application):
         else:
             start_path = arguments[0]
             pattern = arguments[2]
-        
-        
         # List to store the paths of matched files
         matched_files = []
 
@@ -437,7 +439,7 @@ class find(Application):
                 # Construct the full path and add it to the list
                 full_path = os.path.join(root, filename)
                 matched_files.append(full_path)
-        out+="\n".join(matched_files)
+        out += "\n".join(matched_files)
         return out
 
 
