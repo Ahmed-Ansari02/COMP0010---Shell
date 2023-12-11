@@ -101,14 +101,6 @@ public class ShellGrammarParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_s; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).enterS(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).exitS(this);
-		}
 	}
 
 	public final SContext s() throws RecognitionException {
@@ -152,14 +144,6 @@ public class ShellGrammarParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_command; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).enterCommand(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).exitCommand(this);
-		}
 	}
 
 	public final CommandContext command() throws RecognitionException {
@@ -241,14 +225,6 @@ public class ShellGrammarParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_redirection; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).enterRedirection(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).exitRedirection(this);
-		}
 	}
 
 	public final RedirectionContext redirection() throws RecognitionException {
@@ -327,14 +303,6 @@ public class ShellGrammarParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_pipe; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).enterPipe(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).exitPipe(this);
-		}
 	}
 
 	public final PipeContext pipe() throws RecognitionException {
@@ -420,14 +388,6 @@ public class ShellGrammarParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_call; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).enterCall(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).exitCall(this);
-		}
 	}
 
 	public final CallContext call() throws RecognitionException {
@@ -543,14 +503,6 @@ public class ShellGrammarParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_argument; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).enterArgument(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).exitArgument(this);
-		}
 	}
 
 	public final ArgumentContext argument() throws RecognitionException {
@@ -618,14 +570,6 @@ public class ShellGrammarParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_quoted; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).enterQuoted(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ShellGrammarListener ) ((ShellGrammarListener)listener).exitQuoted(this);
-		}
 	}
 
 	public final QuotedContext quoted() throws RecognitionException {

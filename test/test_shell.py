@@ -18,6 +18,10 @@ class TestShell(unittest.TestCase):
         output = eval("ls a b")
         self.assertEqual(output, "wrong number of command line arguments")
 
+    def ls_dir_not_found(self):
+        output = eval("ls thisisntadir")
+        self.assertEqual(output, "directory thisisntadir does not exist")
+
     def test_ls_one_arg(self):
         output = eval("ls test")
         self.assertEqual(output, "test_shell.py\n__pycache__\n")
@@ -34,6 +38,10 @@ class TestShell(unittest.TestCase):
         eval("cd comp0010")
         self.assertEqual(os.getcwd(), "/comp0010")
 
+    def test_cd_wrong_args(self):
+        output = eval("cd")
+        self.assertEqual(output, "wrong number of command line arguments")
+
     def test_pwd(self):
         output = eval("pwd")
         self.assertEqual(output, "/comp0010\n")
@@ -44,6 +52,10 @@ class TestShell(unittest.TestCase):
         with open('test.txt') as f:
             out += f.read()
         self.assertEqual(output, f"{out}")
+
+    def test_cat_file_not_found(self):
+        output = eval("cat notfound")
+        self.assertEqual(output, "file notfound does not exist")
 
     def test_head(self):
         output = eval("head -n 2 requirements.txt")
@@ -57,14 +69,122 @@ class TestShell(unittest.TestCase):
         output = eval("head -a 2 requirements.txt")
         self.assertEqual(output, "wrong flags")
 
+    def test_head_file_not_found(self):
+        output = eval("head nonexistent.txt")
+        self.assertEqual(output, "file nonexistent.txt does not exist")
+
     def test_tail(self):
         output = eval("tail -n 2 requirements.txt")
         self.assertEqual(output,
                          "antlr4-python3-runtime==4.13.1\nantlr4-tools==0.2\n")
 
+    def test_tail_wrong_flag(self):
+        output = eval("tail -a 2 requirements.txt")
+        self.assertEqual(output, "wrong flags")
+
+    def test_tail_wrong_args(self):
+        output = eval("tail -n 2 requirements.txt test.txt")
+        self.assertEqual(output, "wrong number of command line arguments")
+
+    def test_tail_one_arg(self):
+        output = eval("tail test.txt")
+        expected = ""
+        with open('test.txt') as f:
+            expected += f.read()
+        self.assertEqual(output, f"{expected}")
+
+    def test_tail_file_not_found(self):
+        output = eval("tail nonexistent.txt")
+        self.assertEqual(output, "file nonexistent.txt does not exist")
+
     def test_grep(self):
         output = eval("grep 'fla..' requirements.txt")
         self.assertEqual(output, "flake8==3.8.0\nflake8-html\n")
+
+    def test_grep_wrong_args(self):
+        output = eval("grep wrongargs")
+        self.assertEqual(output, "wrong number of command line arguments")
+
+    def test_uniq(self):
+        output = eval("uniq test.txt")
+        arguments = ["\" hel lo\"", 'abc', '\'hello\'', " AAA ", 'test2.txt']
+        self.assertEqual(output.split("\n"), arguments)
+
+    def test_uniq_file_not_found(self):
+        output = eval("uniq nonexistent.txt")
+        self.assertEqual(output, "file nonexistent.txt does not exist")
+
+    def test_uniq_i(self):
+        output = eval("uniq -i test.txt")
+        arguments = ["\" hel lo\"", 'abc', '\'hello\'', " AAA ", 'test2.txt']
+        arguments = [arg.upper() for arg in arguments]
+        self.assertEqual(output.split("\n"), arguments)
+
+    def test_sort(self):
+        output = eval("sort test.txt")
+        arguments = [" AAA ", "\" hel lo\"",
+                     '\'hello\'', 'abc', 'test2.txt', '']
+        self.assertEqual(output.split("\n"), arguments)
+
+    def test_sort_reverse(self):
+        output = eval("sort -r test.txt")
+        arguments = ['test2.txt', 'abc', '\'hello\'',
+                     "\" hel lo\"", " AAA ", '']
+        self.assertEqual(output.split("\n"), arguments)
+
+    def test_sort_file_not_found(self):
+        output = eval("sort nonexistent.txt")
+        self.assertEqual(output, "file nonexistent.txt does not exist")
+
+    def test_find(self):
+        output = eval("find -name \'*.txt\'")
+        self.assertEqual(output,
+                         "./requirements.txt\n./test2.txt\n." +
+                         "/testfile.txt\n./test.txt")
+
+    def test_cut(self):
+        output = eval("cut -b 1 test.txt")
+        self.assertEqual(output.split("\n"),
+                         ["\"", "a", "\'", " ", "t", ''])
+
+    def test_cut_overlapping(self):
+        output = eval("cut -b 1-3,2 test.txt")
+        self.assertEqual(output.split("\n"),
+                         ["\" h", "abc", "\'he", " AA", "tes", ''])
+
+    def test_cut_wrong_line(self):
+        output = eval("cut -b 1-5 test.txt")
+        self.assertEqual(output, "Index out of bounds")
+
+    def test_cut_incorrect_options(self):
+        output = eval("cut -b 5-1 test.txt")
+        self.assertEqual(output, "Incorrect format for byte range")
+
+    def test_cut_pre_interval(self):
+        output = eval("cut -b 2- test.txt")
+        self.assertEqual(output.split("\n"),
+                         [" hel lo\"", "bc", "hello\'",
+                          "AAA ", "est2.txt", ''])
+
+    def test_cut_post_interval(self):
+        output = eval("cut -b -2 test.txt")
+        self.assertEqual(output.split("\n"),
+                         ["\" ", "ab", "\'h", " A", "te", ''])
+
+    def test_cut_wrong_option(self):
+        output = eval("cut -c 1 test.txt")
+        self.assertEqual(output,
+                         "wrong number of command line arguments or flags")
+
+    def test_cut_file_not_found(self):
+        output = eval("cut -b 1 nonexistent.txt")
+        self.assertEqual(output, "file nonexistent.txt does not exist")
+
+    def test_unsafe(self):
+        output = eval("_cd ; echo hi")
+        self.assertEqual(output,
+                         "wrong number of command line arguments" +
+                         "\nhi")
 
     def test_single_quoted(self):
         output = eval("echo 'hello'")
@@ -102,6 +222,10 @@ class TestShell(unittest.TestCase):
             out += f.read()
         self.assertEqual(output, f"{out}")
 
+    def test_input_redirection_wrong_file(self):
+        output = eval("cat < nonexistent.txt")
+        self.assertEqual(str(output), str("file nonexistent.txt not found"))
+
     def test_pipe(self):
         output = eval("cat test.txt | grep abc")
         self.assertEqual(output, "abc\n")
@@ -110,12 +234,20 @@ class TestShell(unittest.TestCase):
         output = eval("cat test.txt | grep \" *\" | grep abc")
         self.assertEqual(output, "abc\n")
 
+    def test_pipe_with_error(self):
+        output = eval("cat doesnotexist.txt | grep abc")
+        self.assertEqual(output, "")
+
     def test_sequence(self):
         output = eval("echo foo ; echo bar")
         self.assertEqual(output, "foo\nbar")
 
     def test_sequence_with_error(self):
         output = eval("grep 'abc' notadirectory ; echo hi ")
+        self.assertEqual(output, "")
+
+    def test_sequence_substitution_with_error(self):
+        output = eval("`cat notadirectory.txt` ; echo hi ")
         self.assertEqual(output, "")
 
     def test_multiple_sequence(self):
@@ -127,17 +259,12 @@ class TestShell(unittest.TestCase):
         self.assertEqual(output, "foo bar")
 
     def test_globbing(self):
-        output = eval("*.txt")
-        self.assertEqual(output,
-                         "requirements.txt test2.txt test.txt testfile.txt")
-
-    def test_globbing_command(self):
         output = eval("echo *.txt")
         self.assertEqual(output,
-                         "requirements.txt test2.txt test.txt testfile.txt")
+                         "requirements.txt test2.txt testfile.txt test.txt")
 
     def test_globbing_files(self):
-        output = eval("test/*")
+        output = eval("echo test/*")
         self.assertEqual(output, "test/test_shell.py test/__pycache__")
 
     def test_globbing_files_not_found(self):
@@ -149,15 +276,19 @@ class TestShell(unittest.TestCase):
         self.assertEqual(object_to_string,
                          "Call(Argument(['echo']), [Argument(['hello'])])")
 
+    def test_unknown_command(self):
+        output = eval("unknowncommand")
+        self.assertEqual(output, "unknowncommand is an unknown command")
+
     def test_to_string_sequence(self):
         object_to_string = str(Seq(Call(
             [Argument(['echo']), Argument(['a'])]),
             Call([Argument(['echo']), Argument(['b'])])))
         self.assertEqual(object_to_string,
-                         "Seq(Call(Argument(['echo']),\
-        [Argument(['a'])]),\
-        Call(Argument(['echo']),\
-        [Argument(['b'])]))")
+                         "Seq(Call(Argument(['echo']), " +
+                         "[Argument(['a'])]), " +
+                         "Call(Argument(['echo']), " +
+                         "[Argument(['b'])]))")
 
     def test_to_string_pipe(self):
         object_to_string = str(Pipe(Call(
@@ -166,10 +297,10 @@ class TestShell(unittest.TestCase):
                 Call([Argument(['grep']),
                      Argument(['.'])])))
         self.assertEqual(object_to_string,
-                         "Pipe(Call(Argument(['cat']),\
-            [Argument(['test.txt'])]),\
-            Call(Argument(['grep']),\
-            [Argument(['.'])]))")
+                         "Pipe(Call(Argument(['cat']), " +
+                         "[Argument(['test.txt'])]), " +
+                         "Call(Argument(['grep']), " +
+                         "[Argument(['.'])]))")
 
     def test_to_string_redirection(self):
         object_to_string = str(Redirection(Call(
@@ -178,25 +309,41 @@ class TestShell(unittest.TestCase):
             '>',
             Argument(['newfile.txt'])))
         self.assertEqual(object_to_string,
-                         "Redirection(Call(Argument(['echo']),\
-        [Argument(['foo'])]),\
-        >,\
-        Argument(['newfile.txt']))")
+                         "Redirection(Call(Argument(['echo']), " +
+                         "[Argument(['foo'])]), " +
+                         ">, " +
+                         "Argument(['newfile.txt']))")
 
     def test_to_string_pattern(self):
         object_to_string = str(Pattern('*.txt'))
+        self.assertEqual(object_to_string, "Pattern(.*.txt)")
+
+    def test_repr_pattern(self):
+        object_to_string = repr(Pattern('*.txt'))
         self.assertEqual(object_to_string, "Pattern(.*.txt)")
 
     def test_to_string_single_quoted(self):
         object_to_string = str(SingleQuoted("'hello'"))
         self.assertEqual(object_to_string, "SingleQuoted(hello)")
 
+    def test_repr_single_quoted(self):
+        object_to_string = repr(SingleQuoted("'hello'"))
+        self.assertEqual(object_to_string, "SingleQuoted(hello)")
+
     def test_to_string_double_quoted(self):
         object_to_string = str(DoubleQuoted('"hello"'))
         self.assertEqual(object_to_string, 'DoubleQuoted(hello)')
 
+    def test_repr_double_quoted(self):
+        object_to_string = repr(DoubleQuoted('"hello"'))
+        self.assertEqual(object_to_string, 'DoubleQuoted(hello)')
+
     def test_to_string_back_quoted(self):
         object_to_string = str(BackQuoted("`echo hello`"))
+        self.assertEqual(object_to_string, "BackQuoted(echo hello)")
+
+    def test_repr_back_quoted(self):
+        object_to_string = repr(BackQuoted("`echo hello`"))
         self.assertEqual(object_to_string, "BackQuoted(echo hello)")
 
     def test_to_string_quoted(self):

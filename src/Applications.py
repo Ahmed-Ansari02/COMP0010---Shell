@@ -6,7 +6,6 @@ import fnmatch
 from os import listdir
 
 
-
 class Application:
     def run(self, arguments: str, out: deque) -> None:
         return None
@@ -22,9 +21,6 @@ class Redirection(Application):
         return visitor.visit_redirection(self)
 
     def __str__(self) -> str:
-        return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
-
-    def __repr__(self) -> str:
         return f"Redirection({self.call_object}, {self.arrow}, {self.io_file})"
 
 
@@ -59,15 +55,15 @@ class Pattern:
         return visitor.visit_pattern(self)
 
 
-class Options:
-    def __init__(self, options: str) -> None:
-        self.options = [x for x in options]
+# class Options:
+#     def __init__(self, options: str) -> None:
+#         self.options = [x for x in options]
 
-    def __str__(self) -> str:
-        return f"Options({self.options})"
+#     def __str__(self) -> str:
+#         return f"Options({self.options})"
 
-    def accept(self, visitor):
-        return visitor.visit_options(self)
+#     def accept(self, visitor):
+#         return visitor.visit_options(self)
 
 
 class Quoted:
@@ -130,13 +126,12 @@ class Argument:
     def __str__(self) -> str:
         return f"Argument({self.argument_list})"
 
-
     def __repr__(self) -> str:
         return f"Argument({self.argument_list})"
 
     def accept(self, visitor):
         return visitor.visit_argument(self)
-      
+
 
 class Call(Application):
     def __init__(self, arguments: [Argument]) -> None:

@@ -45,7 +45,6 @@ class Evaluator(Visitor):
                 arguments.append(arg)
         if not isinstance(app, str):
             app = app.accept(self)
-        
         if app in APPLICATIONS.keys() or app[1:] in APPLICATIONS.keys():
             if app[0] == "_":
                 try:
@@ -53,10 +52,9 @@ class Evaluator(Visitor):
                 except Exception as e:
                     return str(e)
             else:
-                return APPLICATIONS[app]().run(arguments)                
+                return APPLICATIONS[app]().run(arguments)
         else:
             raise ValueError(f"{app} is an unknown command")
-    
 
     def visit_argument(self, argument):
         to_return = "".join(
@@ -78,7 +76,7 @@ class Evaluator(Visitor):
                 with open(io_file, 'r') as file:
                     file_content = file.read()
             except FileNotFoundError:
-                raise(f"file {io_file} not found")
+                return FileNotFoundError(f"file {io_file} not found")
             stdin = io.StringIO(file_content)
             call_object.arguments.append(stdin)
             return call_object.accept(self)
@@ -119,10 +117,13 @@ class Evaluator(Visitor):
         return evaluate(convert((backquoted.value[1:-1])))
 
     def visit_pipe(self, pipe):
-        left_result = pipe.left.accept(self)
-        stdin = io.StringIO(left_result)
-        pipe.right.arguments.append(stdin)
-        return pipe.right.accept(self)
+        try:
+            left_result = pipe.left.accept(self)
+            stdin = io.StringIO(left_result)
+            pipe.right.arguments.append(stdin)
+            return pipe.right.accept(self)
+        except Exception:
+            return ""
 
     def visit_pattern(self, pattern):
         return ' '.join(pattern.files)

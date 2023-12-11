@@ -23,8 +23,10 @@ def convert(cmdline: str):
 def evaluate(e):
     if e is None:
         return ""
-    return e.accept(Evaluator())  #Visitor for the application
+    return e.accept(Evaluator())  # Visitor for the application
 
+
+def eval(cmd_str: str):
     try:
         return evaluate(convert(cmd_str))
     except ValueError as e:
