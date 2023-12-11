@@ -2,7 +2,7 @@ class Visitor():
 
     def visit_call(self, call):
         return None
-    
+
     def visit_argument(self, argument):
         return None
 
@@ -22,7 +22,7 @@ class Visitor():
         return None
 
     def visit_pipe(self, pipe):
-        return None    
-    
+        return None
+
     def visit_pattern(self, pattern):
         return None
