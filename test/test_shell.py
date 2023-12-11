@@ -138,9 +138,14 @@ class TestShell(unittest.TestCase):
 
     def test_find(self):
         output = eval("find -name \'*.txt\'")
-        self.assertEqual(output,
-                         "./requirements.txt\n./test2.txt\n." +
-                         "/testfile.txt\n./test.txt")
+        output = sorted(output.split("\n"))
+        self.assertEqual(
+            output,
+            sorted(
+                "./requirements.txt\n./test2.txt\n\
+                ./testfile.txt\n./test.txt".replace(" ", "").split("\n")
+            ),
+        )
 
     def test_cut(self):
         output = eval("cut -b 1 test.txt")
@@ -260,8 +265,12 @@ class TestShell(unittest.TestCase):
 
     def test_globbing(self):
         output = eval("echo *.txt")
-        self.assertEqual(output,
-                         "requirements.txt test2.txt testfile.txt test.txt")
+        output = sorted(output.split(" "))
+        self.assertEqual(
+            output,
+            sorted(["requirements.txt", "test2.txt",
+                    "testfile.txt", "test.txt"])
+        )
 
     def test_globbing_files(self):
         output = eval("echo test/*")
