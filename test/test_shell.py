@@ -192,12 +192,26 @@ class TestShell(unittest.TestCase):
         self.assertEqual(output, "file nonexistent.txt does not exist")
 
     def test_wc(self):
-        output = eval("wc test.txt")
-        newline_count = 4
-        word_count = 7
-        byte_count = 37
-        self.assertEqual(output,
-                         f"{newline_count}\t{word_count}\t{byte_count}\n")
+        output = eval("wc test.txt").strip().split()
+        line_count = "5"
+        word_count = "7"
+        byte_count = "37"
+        self.assertEqual(output, [line_count, word_count, byte_count])
+
+    def test_wc_l(self):
+        output = eval("wc -l test.txt").strip().split()
+        line_count = "5"
+        self.assertEqual(output, [line_count])
+
+    def test_wc_w(self):
+        output = eval("wc -w test.txt").strip().split()
+        word_count = "7"
+        self.assertEqual(output, [word_count])
+
+    def test_wc_m(self):
+        output = eval("wc -m test.txt").strip().split()
+        byte_count = '37'
+        self.assertEqual(output, [byte_count])
 
     def test_wc_wrong_args(self):
         output = eval("wc")

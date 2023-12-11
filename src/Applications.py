@@ -446,6 +446,22 @@ class wc(Application):
         out = ""
         if len(arguments) == 0:
             raise ValueError("wrong number of command line arguments")
+        line_count = 0
+        word_count = 0
+        byte_count = 0
+
+        option = None
+
+        if arguments[0] == "-l":
+            option = "-l"
+            arguments.pop(0)
+        elif arguments[0] == "-w":
+            option = "-w"
+            arguments.pop(0)
+        elif arguments[0] == "-m":
+            option = "-m"
+            arguments.pop(0)
+
         for filename in arguments:
             if not isinstance(filename, io.StringIO):
                 try:
@@ -453,10 +469,18 @@ class wc(Application):
                 except FileNotFoundError:
                     raise ValueError(f"file {filename} does not exist")
             lines = filename.readlines()
-            line_count = len(lines) - 1
-            word_count = sum(len(line.split()) for line in lines)
-            byte_count = filename.seek(0, 2)
-            out += f"{line_count}\t{word_count}\t{byte_count}\n"
+            line_count += len(lines)
+            word_count += sum(len(line.split()) for line in lines)
+            byte_count += filename.seek(0, 2)
+
+        if option == "-l":
+            out = f"{line_count}\n"
+        elif option == "-w":
+            out = f"{word_count}\n"
+        elif option == "-m":
+            out = f"{byte_count}\n"
+        else:
+            out = f"{line_count} {word_count} {byte_count}\n"
         return out
 
 
