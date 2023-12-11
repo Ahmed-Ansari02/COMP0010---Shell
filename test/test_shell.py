@@ -9,6 +9,12 @@ from Visitor import Visitor
 
 class TestShell(unittest.TestCase):
 
+    # Test applications
+
+    def test_application(self):
+        instance = Application()
+        self.assertEqual(instance.run(None, None), None)
+
     def test_ls(self):
         output = eval("cd test; ls")
         self.assertEqual(output, "\ntest_shell.py\n__pycache__\n")
@@ -185,11 +191,49 @@ class TestShell(unittest.TestCase):
         output = eval("cut -b 1 nonexistent.txt")
         self.assertEqual(output, "file nonexistent.txt does not exist")
 
+    def test_wc(self):
+        output = eval("wc test.txt")
+        newline_count = 4
+        word_count = 7
+        byte_count = 37
+        self.assertEqual(output,
+                         f"{newline_count}\t{word_count}\t{byte_count}\n")
+
+    def test_wc_wrong_args(self):
+        output = eval("wc")
+        self.assertEqual(output,
+                         "wrong number of command line arguments")
+
+    def test_wc_file_not_found(self):
+        output = eval("wc nonexistent.txt")
+        self.assertEqual(output,
+                         "file nonexistent.txt does not exist")
+
     def test_unsafe(self):
         output = eval("_cd ; echo hi")
         self.assertEqual(output,
                          "wrong number of command line arguments" +
                          "\nhi")
+
+    # Test functionalities
+    # (quotes, substitution, redirection, pipe, sequence, etc.)
+
+    def test_visitor(self):
+        instance = Visitor()
+        self.assertEqual(True,
+                         instance.visit_argument(None) ==
+                         instance.visit_back_quoted(None) ==
+                         instance.visit_call(None) ==
+                         instance.visit_double_quoted(None) ==
+                         instance.visit_pattern(None) ==
+                         instance.visit_pipe(None) ==
+                         instance.visit_seq(None) ==
+                         instance.visit_single_quoted(None) ==
+                         instance.visit_redirection(None))
+
+    def test_quoted(self):
+        instance = Quoted("'hello'")
+        self.assertEqual(instance.accept(None), None)
 
     def test_single_quoted(self):
         output = eval("echo 'hello'")
@@ -280,6 +324,8 @@ class TestShell(unittest.TestCase):
         output = eval("thisisntafile/*")
         self.assertEqual(output, "directory thisisntafile does not exist")
 
+    # Test str and repr
+
     def test_to_string_call(self):
         object_to_string = str(Call([Argument(['echo']), Argument(['hello'])]))
         self.assertEqual(object_to_string,
@@ -358,27 +404,6 @@ class TestShell(unittest.TestCase):
     def test_to_string_quoted(self):
         object_to_string = str(Quoted("'hello'"))
         self.assertEqual(object_to_string, "Quoted(hello)")
-
-    def test_application(self):
-        instance = Application()
-        self.assertEqual(instance.run(None, None), None)
-
-    def test_visitor(self):
-        instance = Visitor()
-        self.assertEqual(True,
-                         instance.visit_argument(None) ==
-                         instance.visit_back_quoted(None) ==
-                         instance.visit_call(None) ==
-                         instance.visit_double_quoted(None) ==
-                         instance.visit_pattern(None) ==
-                         instance.visit_pipe(None) ==
-                         instance.visit_seq(None) ==
-                         instance.visit_single_quoted(None) ==
-                         instance.visit_redirection(None))
-
-    def test_quoted(self):
-        instance = Quoted("'hello'")
-        self.assertEqual(instance.accept(None), None)
 
 
 if __name__ == "__main__":
