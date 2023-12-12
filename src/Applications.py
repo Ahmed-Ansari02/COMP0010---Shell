@@ -172,12 +172,12 @@ class Seq(Application):
 
 
 class echo(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         return " ".join(arguments)
 
 
 class ls(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         if len(arguments) == 0:
             ls_dir = os.getcwd()
         elif len(arguments) > 1:
@@ -195,7 +195,7 @@ class ls(Application):
 
 
 class cd(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         if len(arguments) == 0 or len(arguments) > 1:
             raise ValueError("wrong number of command line arguments")
         try:
@@ -207,12 +207,12 @@ class cd(Application):
 
 
 class pwd(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         return os.getcwd() + "\n"
 
 
 class cat(Application):
-    def run(self, arguments: [str] = []) -> str:
+    def run(self, arguments: [Argument] = []) -> str:
         out = ""
         for file in arguments:
             if not isinstance(file, io.StringIO):
@@ -227,7 +227,7 @@ class cat(Application):
 
 
 class head(Application):
-    def run(self, arguments: [str] = []) -> str:
+    def run(self, arguments: [Argument] = []) -> str:
         if len(arguments) != 1 and len(arguments) != 3:
             raise ValueError("wrong number of command line arguments")
         if len(arguments) == 1:
@@ -253,7 +253,7 @@ class head(Application):
 
 
 class tail(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         if len(arguments) != 1 and len(arguments) != 3:
             raise ValueError("wrong number of command line arguments")
         if len(arguments) == 1:
@@ -279,7 +279,7 @@ class tail(Application):
 
 
 class grep(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         out = ""
         if len(arguments) < 2:
             raise ValueError("wrong number of command line arguments")
@@ -302,7 +302,7 @@ class grep(Application):
 
 
 class uniq(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         option = None
         if arguments:
             if "-i" == arguments[0]:
@@ -331,7 +331,7 @@ class uniq(Application):
 
 
 class sort(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         option = None
         out = ""
         if arguments:
@@ -395,7 +395,7 @@ class cut(Application):
                 raise ValueError("Incorrect format for byte range")
         return search_bytes
 
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         if len(arguments) != 3 or arguments[0] != "-b":
             raise ValueError("wrong number of command line arguments or flags")
         option = arguments[0]
@@ -419,7 +419,7 @@ class cut(Application):
 
 
 class find(Application):
-    def run(self, arguments: [str] = []) -> None:
+    def run(self, arguments: [Argument] = []) -> None:
         out = ""
         if arguments[0] == "-name":
             start_path = "."
@@ -441,6 +441,49 @@ class find(Application):
         return out
 
 
+class wc(Application):
+    def run(self, arguments: [Argument] = []) -> None:
+        out = ""
+        if len(arguments) == 0:
+            raise ValueError("wrong number of command line arguments")
+        line_count = 0
+        word_count = 0
+        byte_count = 0
+
+        option = None
+
+        if arguments[0] == "-l":
+            option = "-l"
+            arguments.pop(0)
+        elif arguments[0] == "-w":
+            option = "-w"
+            arguments.pop(0)
+        elif arguments[0] == "-m":
+            option = "-m"
+            arguments.pop(0)
+
+        for filename in arguments:
+            if not isinstance(filename, io.StringIO):
+                try:
+                    filename = open(filename)
+                except FileNotFoundError:
+                    raise ValueError(f"file {filename} does not exist")
+            lines = filename.readlines()
+            line_count += len(lines)
+            word_count += sum(len(line.split()) for line in lines)
+            byte_count += filename.seek(0, 2)
+
+        if option == "-l":
+            out = f"{line_count}\n"
+        elif option == "-w":
+            out = f"{word_count}\n"
+        elif option == "-m":
+            out = f"{byte_count}\n"
+        else:
+            out = f"{line_count} {word_count} {byte_count}\n"
+        return out
+
+
 APPLICATIONS = {
     "pwd": pwd,
     "cd": cd,
@@ -454,4 +497,5 @@ APPLICATIONS = {
     "sort": sort,
     "cut": cut,
     "find": find,
+    "wc": wc,
 }

@@ -9,6 +9,12 @@ from Visitor import Visitor
 
 class TestShell(unittest.TestCase):
 
+    # Test applications
+
+    def test_application(self):
+        instance = Application()
+        self.assertEqual(instance.run(None, None), None)
+
     def test_ls(self):
         output = eval("cd test; ls")
         self.assertEqual(output, "\ntest_shell.py\n__pycache__\n")
@@ -185,11 +191,63 @@ class TestShell(unittest.TestCase):
         output = eval("cut -b 1 nonexistent.txt")
         self.assertEqual(output, "file nonexistent.txt does not exist")
 
+    def test_wc(self):
+        output = eval("wc test.txt").strip().split()
+        line_count = "5"
+        word_count = "7"
+        byte_count = "37"
+        self.assertEqual(output, [line_count, word_count, byte_count])
+
+    def test_wc_l(self):
+        output = eval("wc -l test.txt").strip().split()
+        line_count = "5"
+        self.assertEqual(output, [line_count])
+
+    def test_wc_w(self):
+        output = eval("wc -w test.txt").strip().split()
+        word_count = "7"
+        self.assertEqual(output, [word_count])
+
+    def test_wc_m(self):
+        output = eval("wc -m test.txt").strip().split()
+        byte_count = '37'
+        self.assertEqual(output, [byte_count])
+
+    def test_wc_wrong_args(self):
+        output = eval("wc")
+        self.assertEqual(output,
+                         "wrong number of command line arguments")
+
+    def test_wc_file_not_found(self):
+        output = eval("wc nonexistent.txt")
+        self.assertEqual(output,
+                         "file nonexistent.txt does not exist")
+
     def test_unsafe(self):
         output = eval("_cd ; echo hi")
         self.assertEqual(output,
                          "wrong number of command line arguments" +
                          "\nhi")
+
+    # Test functionalities
+    # (quotes, substitution, redirection, pipe, sequence, etc.)
+
+    def test_visitor(self):
+        instance = Visitor()
+        self.assertEqual(True,
+                         instance.visit_argument(None) ==
+                         instance.visit_back_quoted(None) ==
+                         instance.visit_call(None) ==
+                         instance.visit_double_quoted(None) ==
+                         instance.visit_pattern(None) ==
+                         instance.visit_pipe(None) ==
+                         instance.visit_seq(None) ==
+                         instance.visit_single_quoted(None) ==
+                         instance.visit_redirection(None))
+
+    def test_quoted(self):
+        instance = Quoted("'hello'")
+        self.assertEqual(instance.accept(None), None)
 
     def test_single_quoted(self):
         output = eval("echo 'hello'")
@@ -280,6 +338,8 @@ class TestShell(unittest.TestCase):
         output = eval("thisisntafile/*")
         self.assertEqual(output, "directory thisisntafile does not exist")
 
+    # Test str and repr
+
     def test_to_string_call(self):
         object_to_string = str(Call([Argument(['echo']), Argument(['hello'])]))
         self.assertEqual(object_to_string,
@@ -358,27 +418,6 @@ class TestShell(unittest.TestCase):
     def test_to_string_quoted(self):
         object_to_string = str(Quoted("'hello'"))
         self.assertEqual(object_to_string, "Quoted(hello)")
-
-    def test_application(self):
-        instance = Application()
-        self.assertEqual(instance.run(None, None), None)
-
-    def test_visitor(self):
-        instance = Visitor()
-        self.assertEqual(True,
-                         instance.visit_argument(None) ==
-                         instance.visit_back_quoted(None) ==
-                         instance.visit_call(None) ==
-                         instance.visit_double_quoted(None) ==
-                         instance.visit_pattern(None) ==
-                         instance.visit_pipe(None) ==
-                         instance.visit_seq(None) ==
-                         instance.visit_single_quoted(None) ==
-                         instance.visit_redirection(None))
-
-    def test_quoted(self):
-        instance = Quoted("'hello'")
-        self.assertEqual(instance.accept(None), None)
 
 
 if __name__ == "__main__":
